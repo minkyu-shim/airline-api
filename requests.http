@@ -2,7 +2,7 @@
 GET http://localhost:8080
 
 ###
-GET http://localhost:8080/api/v1/software-engineers/1
+GET http://localhost:8080/api/v1/software-engineers/
 # URL must exaclty match the base endpoint in the controller
 ###
 POST http://localhost:8080/api/v1/software-engineers
@@ -21,3 +21,22 @@ Content-Type: application/json
   "name": "Sultan",
   "techStack": "java, python, spring"
 }
+
+###
+POST http://localhost:8080/api/v1/user
+Content-Type: application/json
+
+{
+  "firstName": "Minkyu",
+  "lastName": "Shim",
+  "address": "87 rue de mars",
+  "email": "biggest67@gmail.com",
+  "phoneNumber": "03943848473",
+  "birthDate": "2004-08-11"
+}
+
+###
+GET http://localhost:8080/api/v1/user
+
+###
+DELETE http://localhost:8080/api/v1/user/1
