@@ -7,17 +7,17 @@ import jakarta.persistence.Id;
 
 import java.util.Objects;
 
-@Entity
+@Entity // model
 public class SoftwareEngineer {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // AUTO_INCREMENT (or serial) constraint
     private Integer id;
     private String name;
     private String techStack;
 
     public SoftwareEngineer() {
     }
+
 
     public SoftwareEngineer(Integer id, String name, String techStack) {
         this.id = id;

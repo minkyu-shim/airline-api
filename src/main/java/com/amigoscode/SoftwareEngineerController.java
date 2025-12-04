@@ -19,17 +19,17 @@ public class SoftwareEngineerController {
     // @DeleteMapping
 
     @GetMapping
-    public List<SoftwareEngineer> getAllEngineers() {
+    public List<SoftwareEngineer> getEngineers() {
         return softwareEngineerService.getAllSoftwareEngineers();
     }
 
-    @GetMapping("{id}")
-    public SoftwareEngineer getAllEngineerById(@PathVariable Integer id) {
-        return softwareEngineerService.getSoftwareEngineerById(id);
+    @PostMapping
+    public void addNewSoftwareEngineer(@RequestBody SoftwareEngineer softwareEngineer) {  //@RequestBody
+        softwareEngineerService.insertSoftwareEngineer(softwareEngineer);
     }
 
-    @PostMapping
-    public void addNewSoftwareEngineer(@RequestBody SoftwareEngineer softwareEngineer) {
-        softwareEngineerService.insertSoftwareEngineer(softwareEngineer);
+    @GetMapping("{id}")
+    public SoftwareEngineer getEngineerById(@PathVariable Integer id) {  //@RequestBody
+        return softwareEngineerService.getSoftwareEngineerById(id);
     }
 }
