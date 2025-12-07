@@ -1,5 +1,7 @@
 package com.epita.airlineapi.service;
 
+import com.epita.airlineapi.model.User;
+import com.epita.airlineapi.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 

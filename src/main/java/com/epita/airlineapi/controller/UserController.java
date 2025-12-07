@@ -1,6 +1,11 @@
 package com.epita.airlineapi.controller;
 
+import com.epita.airlineapi.model.User;
+import com.epita.airlineapi.service.UserService;
+
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/user")
