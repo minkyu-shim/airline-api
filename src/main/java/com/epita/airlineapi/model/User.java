@@ -1,7 +1,6 @@
 package com.epita.airlineapi.model;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -11,7 +10,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(nullable = false)
     private String firstName;
@@ -28,10 +27,11 @@ public class User {
 
     private LocalDate birthDate;
 
+    // we need one default constructor for JPA
     public User() {
     }
 
-    public User(Integer id, String firstName, String lastName, String address, String email, String phoneNumber, LocalDate birthDate) {
+    public User(Long id, String firstName, String lastName, String address, String email, String phoneNumber, LocalDate birthDate) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -41,11 +41,12 @@ public class User {
         this.birthDate = birthDate;
     }
 
-    public Integer getId() {
+    // Getters and Setters
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -97,6 +98,7 @@ public class User {
         this.birthDate = birthDate;
     }
 
+    // Equals and HashCode
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;

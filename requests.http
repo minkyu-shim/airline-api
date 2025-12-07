@@ -1,5 +1,61 @@
-### Get method for user
+### 1. Create a new User (POST)
+# Expected: 201 Created
+POST http://localhost:8080/api/v1/user
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "address": "123 Main St, Paris",
+  "phoneNumber": "0123456789",
+  "birthDate": "1990-01-01"
+}
+
+### 2. Get all Users (GET)
+# Expected: 200 OK (List of users)
 GET http://localhost:8080/api/v1/user
 
-### GEt method for client
-GET http://localhost:8080/api/v1/client
+### 3. Get User by ID (GET)
+# Replace '1' with the actual ID if different
+# Expected: 200 OK
+GET http://localhost:8080/api/v1/user/1
+
+### 4. Update User (PUT)
+# We update ONLY the phone and address.
+# Expected: 200 OK
+PUT http://localhost:8080/api/v1/user/1
+Content-Type: application/json
+
+{
+  "phoneNumber": "0987654321",
+  "address": "456 New Avenue, Lyon"
+}
+
+### 5. Verify Update (GET)
+# Check if phone changed BUT firstName remains "John".
+# If firstName is null here, you have the "Null Trap" bug.
+GET http://localhost:8080/api/v1/user/1
+
+### 6. Test Error: Duplicate Email (POST)
+# Try creating another user with the SAME email.
+# Expected: 400 Bad Request
+POST http://localhost:8080/api/v1/user
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "email": "john.doe@example.com",
+  "address": "Different Address",
+  "phoneNumber": "1112223333",
+  "birthDate": "1995-05-05"
+}
+
+### 7. Delete User (DELETE)
+# Expected: 204 No Content
+DELETE http://localhost:8080/api/v1/user/1
+
+### 8. Verify Deletion (GET)
+# Expected: 404 Not Found
+GET http://localhost:8080/api/v1/user/1
