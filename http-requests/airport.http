@@ -1,0 +1,41 @@
+### 1. Create a new Airport (POST)
+# We do not send airportId because it is @GeneratedValue
+POST http://localhost:8080/api/v1/airport
+Content-Type: application/json
+
+{
+  "airportName": "Charles de Gaulle",
+  "airportCountry": "France",
+  "airportCity": "Paris"
+}
+
+### 2. Get All Airports (GET)
+# Check if CDG was added to the list
+GET http://localhost:8080/api/v1/airport
+
+### 3. Get Airport by ID (GET)
+# Assuming the first one created has ID 1.
+# If you restarted your app, the ID counter might have reset or incremented.
+GET http://localhost:8080/api/v1/airport/1
+
+### 4. Update Airport (PUT)
+# Let's change the city to "Roissy" (more specific location)
+PUT http://localhost:8080/api/v1/airport/1
+Content-Type: application/json
+
+{
+  "airportName": "Charles de Gaulle",
+  "airportCountry": "France",
+  "airportCity": "Roissy-en-France"
+}
+
+### 5. Verify Update (GET)
+# Check if the city is now "Roissy-en-France"
+GET http://localhost:8080/api/v1/airport/1
+
+### 6. Delete Airport (DELETE)
+DELETE http://localhost:8080/api/v1/airport/1
+
+### 7. Verify Deletion (GET)
+# Should return 404 Not Found
+GET http://localhost:8080/api/v1/airport/1
