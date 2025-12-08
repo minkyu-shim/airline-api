@@ -1,0 +1,81 @@
+### 0. (Optional) Create a Plane First (if you haven't already)
+# Expected: 201 Created
+POST http://localhost:8080/api/v1/plane
+Content-Type: application/json
+
+{
+  "planeBrand": "Airbus",
+  "planeModel": "A320",
+  "manufacturingYear": 2015
+}
+
+### 1. Create a new Flight (POST)
+# Expected: 201 Created
+POST http://localhost:8080/api/v1/flight
+Content-Type: application/json
+
+{
+  "flightNumber": "AF101",
+  "departureCity": "Paris",
+  "arrivalCity": "London",
+  "departureDate": "2025-12-20T09:30:00",
+  "arrivalDate": "2025-12-20T10:45:00",
+  "departureAirport": "CDG",
+  "arrivalAirport": "LHR",
+  "numberOfSeats": 180,
+  "businessPrice": 350.00,
+  "economyPrice": 120.00,
+  "plane": {
+    "planeId": 1
+  }
+}
+
+### 2. Get all Flights (GET)
+# Expected: 200 OK (List of flights)
+# Or 204 No Content if the list is empty
+GET http://localhost:8080/api/v1/flight
+
+### 3. Get Flight by ID (GET)
+# Replace '1' with the actual ID returned in step 1 (flightId).
+# Expected: 200 OK or 404 Not Found
+GET http://localhost:8080/api/v1/flight/1
+
+### 4. Update Flight (PUT)
+# Example: update arrivalCity, arrivalDate and prices only.
+# Your service should keep other fields unchanged if they are not sent.
+# Expected: 200 OK with "Flight updated successfully"
+PUT http://localhost:8080/api/v1/flight/1
+Content-Type: application/json
+
+{
+  "arrivalCity": "Manchester",
+  "arrivalAirport": "MAN",
+  "arrivalDate": "2025-12-20T11:15:00",
+  "businessPrice": 400.00,
+  "economyPrice": 140.00
+}
+
+### 5. Verify Update (GET)
+# Check that:
+# - arrivalCity/arrivalAirport/arrivalDate/prices changed
+# - departureCity, departureAirport, flightNumber, plane, etc. are still the same as before.
+GET http://localhost:8080/api/v1/flight/1
+
+### 6. Test Error: Update Non-Existent Flight (PUT)
+# Try updating a flight ID that doesn't exist (e.g., 999).
+# Expected: 400 Bad Request with your IllegalStateException message
+PUT http://localhost:8080/api/v1/flight/999
+Content-Type: application/json
+
+{
+  "arrivalCity": "Rome",
+  "arrivalAirport": "FCO"
+}
+
+### 7. Delete Flight (DELETE)
+# Expected: 204 No Content
+DELETE http://localhost:8080/api/v1/flight/1
+
+### 8. Verify Deletion (GET)
+# Expected: 404 Not Found
+GET http://localhost:8080/api/v1/flight/1

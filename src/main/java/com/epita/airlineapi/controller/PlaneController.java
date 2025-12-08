@@ -55,7 +55,7 @@ public class PlaneController {
 
     @PutMapping(path = "{planeId}")
     public ResponseEntity<?> updatePlane(
-            @PathVariable("planeId") Long planeId,
+            @PathVariable Long planeId,
             @RequestBody Plane planeUpdate
     ) {
         try {
