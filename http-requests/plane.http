@@ -1,0 +1,54 @@
+### 1. Create a new Plane (POST)
+# Expected: 201 Created
+POST http://localhost:8080/api/v1/plane
+Content-Type: application/json
+
+{
+  "planeBrand": "Airbus",
+  "planeModel": "A320",
+  "manufacturingYear": 2010
+}
+
+### 2. Get all Planes (GET)
+# Expected: 200 OK (List of planes)
+# Or 204 No Content if the list is empty
+GET http://localhost:8080/api/v1/plane
+
+### 3. Get Plane by ID (GET)
+# Replace '1' with the actual ID returned in step 1.
+# Expected: 200 OK or 404 Not Found
+GET http://localhost:8080/api/v1/plane/1
+
+### 4. Update Plane (PUT)
+# We update ONLY the model and year. "planeBrand" is null (not sent).
+# Expected: 200 OK
+PUT http://localhost:8080/api/v1/plane/1
+Content-Type: application/json
+
+{
+  "planeModel": "A320neo",
+  "manufacturingYear": 2023
+}
+
+### 5. Verify Update (GET)
+# Check if model/year changed BUT "planeBrand" remains "Airbus".
+GET http://localhost:8080/api/v1/plane/1
+
+### 6. Test Error: Update Non-Existent Plane (PUT)
+# Try updating a plane ID that doesn't exist (e.g., 999).
+# Expected: 400 Bad Request (based on your controller's catch block)
+PUT http://localhost:8080/api/v1/plane/999
+Content-Type: application/json
+
+{
+  "planeBrand": "Boeing",
+  "planeModel": "737"
+}
+
+### 7. Delete Plane (DELETE)
+# Expected: 204 No Content
+DELETE http://localhost:8080/api/v1/plane/1
+
+### 8. Verify Deletion (GET)
+# Expected: 404 Not Found
+GET http://localhost:8080/api/v1/plane/1
