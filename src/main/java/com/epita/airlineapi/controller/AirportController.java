@@ -2,7 +2,6 @@ package com.epita.airlineapi.controller;
 
 import com.epita.airlineapi.model.Airport;
 import com.epita.airlineapi.service.AirportService;
-import com.epita.airlineapi.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,12 +14,12 @@ import java.util.Optional;
 public class AirportController {
     private final AirportService airportService;
 
-    public AirportController(AirportService airportService, UserService userService) {
+    public AirportController(AirportService airportService) {
         this.airportService = airportService;
     }
 
     @GetMapping
-    public ResponseEntity<List<Airport>> getAllAirports() {
+    public ResponseEntity<List<Airport>> getAirports() {
         List<Airport> airports = airportService.getAirports();
 
         if (airports.isEmpty()) {
@@ -39,13 +38,13 @@ public class AirportController {
     }
 
     @PostMapping
-    public ResponseEntity<Airport> addAirport(@RequestBody Airport airport) {
+    public ResponseEntity<Airport> createAirport(@RequestBody Airport airport) {
         Airport createdAirport = airportService.saveAirport(airport);
         return new ResponseEntity<>(createdAirport, HttpStatus.CREATED);
     }
 
     @DeleteMapping(path = "{airportId}")
-    public ResponseEntity<Airport> deleteAirport(@PathVariable Long airportId) {
+    public ResponseEntity<Void> deleteAirport(@PathVariable Long airportId) {
         if (airportService.getAirportById(airportId).isPresent()) {
             airportService.deleteAirport(airportId);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
