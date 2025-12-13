@@ -17,14 +17,16 @@ public class Plane {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "plane_id")
     private Long planeId;
 
-    @Column(nullable = false)
+    @Column(name = "plane_brand", nullable = false)
     private String planeBrand;
 
-    @Column(nullable = false)
+    @Column(name = "plane_model", nullable = false)
     private String planeModel;
 
+    @Column(name = "manufacturing_year")
     private Integer manufacturingYear;
 
     @Override
