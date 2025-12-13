@@ -6,6 +6,7 @@ import org.hibernate.proxy.HibernateProxy;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -60,6 +61,20 @@ public class Flight {
 
     @Column(name = "economy_price", nullable = false)
     private BigDecimal economyPrice;
+
+    // Foreign Key mapping
+    // orphanRemoval : The reward still exists in the MilesReward table. It is just "unlinked"
+    @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<MilesReward> rewards;
+
+    // Foreign key mapping
+    // orphanRemoval : The booking still exists in the Book table. It is just "unlinked"
+    @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<Book> bookings;
+
+
 
     @Override
     public final boolean equals(Object o) {
