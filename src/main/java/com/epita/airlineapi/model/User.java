@@ -20,20 +20,22 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
-    @Column(nullable = false)
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
-    @Column(nullable = false)
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
+    @Column(name = "address")
     private String address;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column(nullable = false)
+    @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
     @Override

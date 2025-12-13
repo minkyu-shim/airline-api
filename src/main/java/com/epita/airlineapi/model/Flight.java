@@ -19,21 +19,22 @@ public class Flight {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "flight_id")
     private Long flightId;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "flight_number", nullable = false, unique = true)
     private String flightNumber;
 
-    @Column(nullable = false)
+    @Column(name = "departure_city", nullable = false)
     private String departureCity;
 
-    @Column(nullable = false)
+    @Column(name = "arrival_city", nullable = false)
     private String arrivalCity;
 
-    @Column(nullable = false)
+    @Column(name = "departure_date", nullable = false)
     private LocalDateTime departureDate;
 
-    @Column(nullable = false)
+    @Column(name = "arrival_date", nullable = false)
     private LocalDateTime arrivalDate;
 
     @ManyToOne
@@ -51,13 +52,13 @@ public class Flight {
     @ToString.Exclude // Best Practice: Prevent lazy-loading triggers when printing logs
     private Plane plane;
 
-    @Column(nullable = false)
+    @Column(name = "number_of_seats", nullable = false)
     private Integer numberOfSeats;
 
-    @Column(nullable = false)
+    @Column(name = "business_price", nullable = false)
     private BigDecimal businessPrice;
 
-    @Column(nullable = false)
+    @Column(name = "economy_price", nullable = false)
     private BigDecimal economyPrice;
 
     @Override
