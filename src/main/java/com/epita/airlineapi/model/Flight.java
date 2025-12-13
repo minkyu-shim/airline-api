@@ -36,11 +36,15 @@ public class Flight {
     @Column(nullable = false)
     private LocalDateTime arrivalDate;
 
-    @Column(nullable = false)
-    private String departureAirport;
+    @ManyToOne
+    @JoinColumn(name = "departure_airport_id", nullable = false)
+    @ToString.Exclude
+    private Airport departureAirport;
 
-    @Column(nullable = false)
-    private String arrivalAirport;
+    @ManyToOne
+    @JoinColumn(name = "arrival_airport_id", nullable = false)
+    @ToString.Exclude
+    private Airport arrivalAirport;
 
     @ManyToOne
     @JoinColumn(name = "plane_id", nullable = false)
