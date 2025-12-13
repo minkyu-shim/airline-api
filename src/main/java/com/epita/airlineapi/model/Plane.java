@@ -1,72 +1,52 @@
 package com.epita.airlineapi.model;
 
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.util.Objects;
 
 @Entity
+@Table(name = "planes")
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class Plane {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long planeId;
 
+    @Column(nullable = false)
     private String planeBrand;
 
+    @Column(nullable = false)
     private String planeModel;
 
     private Integer manufacturingYear;
 
-    public Plane() {
-    }
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
 
-    public Plane(Long planeId, String planeBrand, String planeModel, Integer manufacturingYear) {
-        this.planeId = planeId;
-        this.planeBrand = planeBrand;
-        this.planeModel = planeModel;
-        this.manufacturingYear = manufacturingYear;
-    }
+        // REFACTOR: Using Pattern Matching for instanceof
+        if (!(o instanceof Plane other)) return false;
 
-    public Long getPlaneId() {
-        return planeId;
-    }
+        // Handle Hibernate Proxies (lazy loading wrappers)
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
 
-    public void setPlaneId(Long planeId) {
-        this.planeId = planeId;
-    }
+        if (thisEffectiveClass != oEffectiveClass) return false;
 
-    public String getPlaneBrand() {
-        return planeBrand;
-    }
-
-    public void setPlaneBrand(String planeBrand) {
-        this.planeBrand = planeBrand;
-    }
-
-    public String getPlaneModel() {
-        return planeModel;
-    }
-
-    public void setPlaneModel(String planeModel) {
-        this.planeModel = planeModel;
-    }
-
-    public Integer getManufacturingYear() {
-        return manufacturingYear;
-    }
-
-    public void setManufacturingYear(Integer manufacturingYear) {
-        this.manufacturingYear = manufacturingYear;
+        // Compare IDs safely using getters
+        return getPlaneId() != null && Objects.equals(getPlaneId(), other.getPlaneId());
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Plane plane = (Plane) o;
-        return Objects.equals(planeId, plane.planeId) && Objects.equals(planeBrand, plane.planeBrand) && Objects.equals(planeModel, plane.planeModel) && Objects.equals(manufacturingYear, plane.manufacturingYear);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(planeId, planeBrand, planeModel, manufacturingYear);
+    public final int hashCode() {
+        // Return a constant hash for JPA entity consistency
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }

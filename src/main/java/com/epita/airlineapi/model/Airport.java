@@ -1,14 +1,20 @@
 package com.epita.airlineapi.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.util.Objects;
 
 @Entity
+@Table(name = "airports")
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class Airport {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long airportId;
@@ -19,57 +25,26 @@ public class Airport {
 
     private String airportCity;
 
-    public Airport() {
-    }
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
 
-    public Airport(Long airportId, String airportName, String airportCountry, String airportCity) {
-        this.airportId = airportId;
-        this.airportName = airportName;
-        this.airportCountry = airportCountry;
-        this.airportCity = airportCity;
-    }
+        // REFACTOR: Using Pattern Matching for instanceof
+        if (!(o instanceof Airport other)) return false;
 
-    public Long getAirportId() {
-        return airportId;
-    }
+        // Handle Hibernate Proxies (lazy loading wrappers)
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
 
-    public void setAirportId(Long airportId) {
-        this.airportId = airportId;
-    }
+        if (thisEffectiveClass != oEffectiveClass) return false;
 
-    public String getAirportName() {
-        return airportName;
-    }
-
-    public void setAirportName(String airportName) {
-        this.airportName = airportName;
-    }
-
-    public String getAirportCountry() {
-        return airportCountry;
-    }
-
-    public void setAirportCountry(String airportCountry) {
-        this.airportCountry = airportCountry;
-    }
-
-    public String getAirportCity() {
-        return airportCity;
-    }
-
-    public void setAirportCity(String airportCity) {
-        this.airportCity = airportCity;
+        // Compare IDs safely using getters
+        return getAirportId() != null && Objects.equals(getAirportId(), other.getAirportId());
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Airport airport = (Airport) o;
-        return Objects.equals(airportId, airport.airportId) && Objects.equals(airportName, airport.airportName) && Objects.equals(airportCountry, airport.airportCountry) && Objects.equals(airportCity, airport.airportCity);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(airportId, airportName, airportCountry, airportCity);
+    public final int hashCode() {
+        // Return a constant hash for JPA entity consistency
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }

@@ -1,11 +1,19 @@
 package com.epita.airlineapi.model;
 
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.proxy.HibernateProxy;
+
 import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -25,89 +33,27 @@ public class User {
 
     private String phoneNumber;
 
+    @Column(nullable = false)
     private LocalDate birthDate;
 
-    // we need one default constructor for JPA
-    public User() {
-    }
-
-    public User(Long userId, String firstName, String lastName, String address, String email, String phoneNumber, LocalDate birthDate) {
-        this.userId = userId;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.address = address;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.birthDate = birthDate;
-    }
-
-    // Getters and Setters
-    public Long getId() {
-        return userId;
-    }
-
-    public void setId(Long id) {
-        this.userId = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public LocalDate getBirthDate() {
-        return birthDate;
-    }
-
-    public void setBirthDate(LocalDate birthDate) {
-        this.birthDate = birthDate;
-    }
-
-    // Equals and HashCode
     @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(userId, user.userId) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(address, user.address) && Objects.equals(email, user.email) && Objects.equals(phoneNumber, user.phoneNumber) && Objects.equals(birthDate, user.birthDate);
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+
+        // If 'o' is NOT a User, we return false.
+        // If it IS a User, it is automatically cast to 'other' and available in the rest of the method.
+        if (!(o instanceof User other)) return false;
+
+        // logic for proxies (safe check)
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
+
+        return getUserId() != null && Objects.equals(getUserId(), other.getUserId());
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(userId, firstName, lastName, address, email, phoneNumber, birthDate);
+    public final int hashCode() {
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }
