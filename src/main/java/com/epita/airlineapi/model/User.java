@@ -2,6 +2,7 @@ package com.epita.airlineapi.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.time.LocalDate;
@@ -14,6 +15,8 @@ import java.util.Objects;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Inheritance(strategy = InheritanceType.JOINED) // This creates separate tables linked by ID
+@SuperBuilder  // <--- REQUIRED for inheritance
 public class User {
 
     @Id
@@ -39,7 +42,7 @@ public class User {
     private LocalDate birthDate;
 
     @Override
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
 
         // If 'o' is NOT a User, we return false.
@@ -55,7 +58,7 @@ public class User {
     }
 
     @Override
-    public final int hashCode() {
+    public int hashCode() {
         return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }
