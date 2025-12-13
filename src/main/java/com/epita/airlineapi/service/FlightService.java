@@ -49,21 +49,21 @@ public class FlightService {
                         "Flight with id " + flightId + " does not exist"
                 ));
 
-        // 2. Update Flight Number
+        // 2. Update Flight Number (String check remains)
         if (updateRequest.getFlightNumber() != null &&
                 !updateRequest.getFlightNumber().isEmpty() &&
                 !Objects.equals(flight.getFlightNumber(), updateRequest.getFlightNumber())) {
             flight.setFlightNumber(updateRequest.getFlightNumber());
         }
 
-        // 3. Update Departure City
+        // 3. Update Departure City (String check remains)
         if (updateRequest.getDepartureCity() != null &&
                 !updateRequest.getDepartureCity().isEmpty() &&
                 !Objects.equals(flight.getDepartureCity(), updateRequest.getDepartureCity())) {
             flight.setDepartureCity(updateRequest.getDepartureCity());
         }
 
-        // 4. Update Arrival City
+        // 4. Update Arrival City (String check remains)
         if (updateRequest.getArrivalCity() != null &&
                 !updateRequest.getArrivalCity().isEmpty() &&
                 !Objects.equals(flight.getArrivalCity(), updateRequest.getArrivalCity())) {
@@ -84,19 +84,17 @@ public class FlightService {
 
         // 7. Update Departure Airport
         if (updateRequest.getDepartureAirport() != null &&
-                !updateRequest.getDepartureAirport().isEmpty() &&
                 !Objects.equals(flight.getDepartureAirport(), updateRequest.getDepartureAirport())) {
             flight.setDepartureAirport(updateRequest.getDepartureAirport());
         }
 
         // 8. Update Arrival Airport
         if (updateRequest.getArrivalAirport() != null &&
-                !updateRequest.getArrivalAirport().isEmpty() &&
                 !Objects.equals(flight.getArrivalAirport(), updateRequest.getArrivalAirport())) {
             flight.setArrivalAirport(updateRequest.getArrivalAirport());
         }
 
-        // 9. Update Plane (IMPORTANT: Object Relation, Not ID)
+        // 9. Update Plane
         if (updateRequest.getPlane() != null &&
                 !Objects.equals(flight.getPlane(), updateRequest.getPlane())) {
             flight.setPlane(updateRequest.getPlane());
