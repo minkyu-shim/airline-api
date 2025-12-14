@@ -1,0 +1,136 @@
+### 0.1 Create a Client (and User)
+# Expected: 201 Created
+# Response body should be the created client object with a generated ID.
+POST http://localhost:8080/api/v1/clients
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "address": "123 Main St",
+  "email": "john.doe.book@example.com",
+  "phoneNumber": "555-1234",
+  "birthDate": "1990-01-01",
+  "passportNumber": "B1234567"
+}
+
+### 0.2 Create Departure Airport
+# Expected: 201 Created
+# Response body should be the created airport object with a generated ID.
+POST http://localhost:8080/api/v1/airports
+Content-Type: application/json
+
+{
+  "airportName": "Charles de Gaulle",
+  "airportCountry": "France",
+  "airportCity": "Paris"
+}
+
+### 0.3 Create Arrival Airport
+# Expected: 201 Created
+# Response body should be the created airport object with a generated ID.
+POST http://localhost:8080/api/v1/airports
+Content-Type: application/json
+
+{
+  "airportName": "Heathrow",
+  "airportCountry": "UK",
+  "airportCity": "London"
+}
+
+### 0.4 Create a Plane
+# Expected: 201 Created
+# Response body should be the created plane object with a generated ID.
+POST http://localhost:8080/api/v1/planes
+Content-Type: application/json
+
+{
+  "planeBrand": "Airbus",
+  "planeModel": "A320",
+  "manufacturingYear": 2015
+}
+
+### 0.5 Create a new Flight
+# Expected: 201 Created
+# Response body should be the created flight object with a generated ID.
+POST http://localhost:8080/api/v1/flights
+Content-Type: application/json
+
+{
+  "flightNumber": "AF103",
+  "departureCity": "Paris",
+  "arrivalCity": "London",
+  "departureDate": "2025-12-22T10:00:00",
+  "arrivalDate": "2025-12-22T11:15:00",
+  "numberOfSeats": 180,
+  "businessPrice": 350.00,
+  "economyPrice": 120.00,
+  "plane": {
+    "planeId": 1
+  },
+  "departureAirport": {
+    "airportId": 1
+  },
+  "arrivalAirport": {
+    "airportId": 2
+  }
+}
+
+### 1. Create a new Book (POST)
+# Expected: 201 Created
+# Response body should be the created book object.
+POST http://localhost:8080/api/v1/books
+Content-Type: application/json
+
+{
+  "reservationId": 1,
+  "flight": {
+    "flightId": 1
+  },
+  "client": {
+    "userId": 1
+  },
+  "typeOfSeat": "Business"
+}
+
+### 2. Get All Books (GET)
+# Expected: 200 OK
+# Response body should be a JSON array of all books.
+GET http://localhost:8080/api/v1/books
+
+### 3. Get Book by ID (GET)
+# Expected: 200 OK
+# Response body should be the book with ID 1.
+GET http://localhost:8080/api/v1/books/1
+
+### 4. Update Book (PUT)
+# Expected: 200 OK
+# Response body should be the updated book object.
+PUT http://localhost:8080/api/v1/books/1
+Content-Type: application/json
+
+{
+  "reservationId": 1,
+  "flight": {
+    "flightId": 1
+  },
+  "client": {
+    "userId": 1
+  },
+  "typeOfSeat": "First"
+}
+
+### 5. Verify Update (GET)
+# Expected: 200 OK
+# Response body should be the book with the updated seat type "First".
+GET http://localhost:8080/api/v1/books/1
+
+### 6. Delete Book (DELETE)
+# Expected: 204 No Content
+# No response body.
+DELETE http://localhost:8080/api/v1/books/1
+
+### 7. Verify Deletion (GET)
+# Expected: 404 Not Found
+# Error response body.
+GET http://localhost:8080/api/v1/books/1

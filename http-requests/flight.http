@@ -1,6 +1,7 @@
 ### 0.1 Create Departure Airport (First)
 # Expected: 201 Created
-POST http://localhost:8080/api/v1/airport
+# Response body should be the created airport object with a generated ID.
+POST http://localhost:8080/api/v1/airports
 Content-Type: application/json
 
 {
@@ -11,7 +12,8 @@ Content-Type: application/json
 
 ### 0.2 Create Arrival Airport
 # Expected: 201 Created
-POST http://localhost:8080/api/v1/airport
+# Response body should be the created airport object with a generated ID.
+POST http://localhost:8080/api/v1/airports
 Content-Type: application/json
 
 {
@@ -22,7 +24,8 @@ Content-Type: application/json
 
 ### 0.3 Create a "New" Airport for the Update Test later
 # Expected: 201 Created
-POST http://localhost:8080/api/v1/airport
+# Response body should be the created airport object with a generated ID.
+POST http://localhost:8080/api/v1/airports
 Content-Type: application/json
 
 {
@@ -33,7 +36,8 @@ Content-Type: application/json
 
 ### 0.4 Create a Plane
 # Expected: 201 Created
-POST http://localhost:8080/api/v1/plane
+# Response body should be the created plane object with a generated ID.
+POST http://localhost:8080/api/v1/planes
 Content-Type: application/json
 
 {
@@ -43,10 +47,9 @@ Content-Type: application/json
 }
 
 ### 1. Create a new Flight (POST)
-# CHANGE: "departureAirport" and "arrivalAirport" are now objects with IDs.
-# We link to Airport ID 1 (CDG) and Airport ID 2 (Heathrow).
 # Expected: 201 Created
-POST http://localhost:8080/api/v1/flight
+# Response body should be the created flight object with a generated ID.
+POST http://localhost:8080/api/v1/flights
 Content-Type: application/json
 
 {
@@ -71,17 +74,18 @@ Content-Type: application/json
 
 ### 2. Get all Flights (GET)
 # Expected: 200 OK
-GET http://localhost:8080/api/v1/flight
+# Response body should be a JSON array of all flights.
+GET http://localhost:8080/api/v1/flights
 
 ### 3. Get Flight by ID (GET)
 # Expected: 200 OK
-GET http://localhost:8080/api/v1/flight/1
+# Response body should be the flight with ID 1.
+GET http://localhost:8080/api/v1/flights/1
 
 ### 4. Update Flight (PUT)
-# Scenario: The flight destination changes from London (ID 2) to Manchester (ID 3).
-# CHANGE: We pass the object for the new airport (ID 3).
 # Expected: 200 OK
-PUT http://localhost:8080/api/v1/flight/1
+# Response body should be the updated flight object.
+PUT http://localhost:8080/api/v1/flights/1
 Content-Type: application/json
 
 {
@@ -95,12 +99,14 @@ Content-Type: application/json
 }
 
 ### 5. Verify Update (GET)
-# Check that the response now shows arrivalAirport with ID 3 (Manchester)
-GET http://localhost:8080/api/v1/flight/1
+# Expected: 200 OK
+# Response body should be the flight with the updated arrival city "Manchester".
+GET http://localhost:8080/api/v1/flights/1
 
 ### 6. Test Error: Update Non-Existent Flight (PUT)
-# Expected: 400 Bad Request or 404 Not Found
-PUT http://localhost:8080/api/v1/flight/999
+# Expected: 404 Not Found
+# Error response body.
+PUT http://localhost:8080/api/v1/flights/999
 Content-Type: application/json
 
 {
@@ -112,8 +118,10 @@ Content-Type: application/json
 
 ### 7. Delete Flight (DELETE)
 # Expected: 204 No Content
-DELETE http://localhost:8080/api/v1/flight/1
+# No response body.
+DELETE http://localhost:8080/api/v1/flights/1
 
 ### 8. Verify Deletion (GET)
 # Expected: 404 Not Found
-GET http://localhost:8080/api/v1/flight/1
+# Error response body.
+GET http://localhost:8080/api/v1/flights/1
