@@ -5,6 +5,8 @@ import com.epita.airlineapi.repository.FlightRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -28,6 +30,23 @@ public class FlightService {
         return flightRepository.findById(flightId)
                 .orElseThrow(() -> new NoSuchElementException("Flight with id " + flightId + " not found"));
     }
+
+    // GET ONE (By Flight Number)
+    public Flight getFlightByNumber(String flightNumber) {
+        return flightRepository.findByFlightNumber(flightNumber)
+                .orElseThrow(() -> new NoSuchElementException("Flight " + flightNumber + " not found"));
+    }
+
+    public List<Flight> searchFlights(String departureCity, String arrivalCity, LocalDate date) {
+    LocalDateTime startOfDay = date.atStartOfDay();
+    LocalDateTime endOfDay = date.atTime(23, 59, 59);
+    return flightRepository.findByDepartureCityIgnoreCaseAndArrivalCityIgnoreCaseAndDepartureDateBetween(
+        departureCity,
+        arrivalCity,
+        startOfDay,
+        endOfDay
+    );
+}
 
     // CREATE
     public Flight saveFlight(Flight flight) {

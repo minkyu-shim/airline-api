@@ -2,10 +2,12 @@ package com.epita.airlineapi.controller;
 
 import com.epita.airlineapi.model.Flight;
 import com.epita.airlineapi.service.FlightService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -60,4 +62,13 @@ public class FlightController {
         flightService.deleteFlight(flightId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search")
+    public List<Flight> searchFlights(
+        @RequestParam String from,
+        @RequestParam String to,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+) {
+    return flightService.searchFlights(from, to, date);
+}
 }
