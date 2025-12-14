@@ -17,12 +17,16 @@ public class Airport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "airport_id")
     private Long airportId;
 
+    @Column(name = "airport_name")
     private String airportName;
 
+    @Column(name = "airport_country")
     private String airportCountry;
 
+    @Column(name = "airport_city")
     private String airportCity;
 
     @Override

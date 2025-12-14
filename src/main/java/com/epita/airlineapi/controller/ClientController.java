@@ -9,57 +9,55 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v1/clients")
+@RequestMapping("/api/v1/clients")
 public class ClientController {
+
     private final ClientService clientService;
 
     public ClientController(ClientService clientService) {
         this.clientService = clientService;
     }
 
-    // GET: Get clients
+    // GET ALL
     @GetMapping
     public ResponseEntity<List<Client>> getClients() {
         List<Client> clients = clientService.getClients();
-
         if (clients.isEmpty()) {
-            // Error 204's body is ignored, so following syntax is used
             return ResponseEntity.noContent().build();
         }
-        return new ResponseEntity<>(clients, HttpStatus.OK);
+        return ResponseEntity.ok(clients);
     }
 
-    // GET: Get client by id
-    @GetMapping("{passportNumber}")
-    public ResponseEntity<Client> getClientById(@PathVariable String passportNumber) {
-        // If missing, ClientService method .getClientById(...) throws NoSuchElementException,
-        // caught by GlobalExceptionHandler; i.e. no need for Optional, .map(). and Optional.orElseGet()
-        Client client = clientService.getClientById(passportNumber);
-
-        return new ResponseEntity<>(client, HttpStatus.OK);
+    // GET ONE (Using Passport Number)
+    @GetMapping("/{passportNumber}")
+    public ResponseEntity<Client> getClient(@PathVariable String passportNumber) {
+        // GlobalExceptionHandler catches NoSuchElementException -> 404
+        return ResponseEntity.ok(clientService.getClientByPassport(passportNumber));
     }
 
-    // POST: create client
+    // CREATE
     @PostMapping
     public ResponseEntity<Client> createClient(@RequestBody Client client) {
-        // If data is Bad (@Valid fails), IllegalStateException is caught by GlobalExceptionHandler
+        // GlobalExceptionHandler catches IllegalStateException (Passport/Email taken) -> 400
         Client createdClient = clientService.createClient(client);
-        return new ResponseEntity<>(createdClient, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdClient);
     }
 
-    // UPDATE: update client
-    @PutMapping("{passportNumber}")
-    public ResponseEntity<Client> updateClient(@PathVariable String passportNumber, @RequestBody Client newDetails) {
-        // If IllegalStateException happens, GlobalHandler catches it.
-        Client updatedClient = clientService.updateClient(passportNumber, newDetails);
-        return new ResponseEntity<>(updatedClient, HttpStatus.OK);
+    // UPDATE
+    @PutMapping("/{passportNumber}")
+    public ResponseEntity<Client> updateClient(
+            @PathVariable String passportNumber,
+            @RequestBody Client client) {
+
+        // Returns the full updated JSON object
+        Client updatedClient = clientService.updateClient(passportNumber, client);
+        return ResponseEntity.ok(updatedClient);
     }
 
-    // DELETE: delete client
-    @DeleteMapping("{passportNumber}")
+    // DELETE
+    @DeleteMapping("/{passportNumber}")
     public ResponseEntity<Void> deleteClient(@PathVariable String passportNumber) {
-        // If it doesn't exist, Service throws NoSuchElementException.
         clientService.deleteClient(passportNumber);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 }

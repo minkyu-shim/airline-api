@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @Service
 public class ClientService {
+
     private final ClientRepository clientRepository;
 
     public ClientService(ClientRepository clientRepository) {
@@ -22,10 +22,9 @@ public class ClientService {
         return clientRepository.findAll();
     }
 
-    // GET ONE
-    public Client getClientById(String passportNumber) {
-        // Exception Handled by GlobalExceptionHandler
-        return clientRepository.findById(passportNumber)
+    // GET ONE (By Passport)
+    public Client getClientByPassport(String passportNumber) {
+        return clientRepository.findByPassportNumber(passportNumber)
                 .orElseThrow(() -> new NoSuchElementException(
                         "Client with passport no. " + passportNumber + " does not exist"
                 ));
@@ -33,53 +32,58 @@ public class ClientService {
 
     // CREATE
     public Client createClient(Client client) {
-        Optional<Client> optionalClient = clientRepository.findById(client.getPassportNumber());
-        if (optionalClient.isPresent()) {
-            throw new IllegalStateException("Client with passport no. " +
-                    client.getPassportNumber() + " already exists");
+        // 1. Check Passport Uniqueness
+        if (clientRepository.existsByPassportNumber(client.getPassportNumber())) {
+            throw new IllegalStateException("Passport no. " + client.getPassportNumber() + " already exists");
         }
+
+        // 2. Check Email Uniqueness (Inherited from User)
+        if (client.getEmail() != null && clientRepository.existsByEmail(client.getEmail())) {
+            throw new IllegalStateException("Email " + client.getEmail() + " is already in use");
+        }
+
         return clientRepository.save(client);
     }
 
     // UPDATE
-    @Transactional  // Required for atomicity and to detect changes and auto-run UPDATE sql cmd
+    @Transactional
     public Client updateClient(String oldPassportNumber, Client newDetails) {
-        String newPassportNumber = newDetails.getPassportNumber();
+        // 1.Retrieve existing client
+        Client existingClient = getClientByPassport(oldPassportNumber);
 
-        // If no change, return immediately
-        if (newPassportNumber == null || newPassportNumber.equals(oldPassportNumber)) {
-            return new Client(oldPassportNumber);
+        // 2.Update Passport Number
+        String newPassport = newDetails.getPassportNumber();
+        if (newPassport != null && !newPassport.equals(oldPassportNumber)) {
+            // Check if the NEW passport is already taken by someone else
+            if (clientRepository.existsByPassportNumber(newPassport)) {
+                throw new IllegalStateException("Passport no. " + newPassport + " already taken");
+            }
+            existingClient.setPassportNumber(newPassport);
         }
 
-        // Is the new ID already taken?
-        // We use standard existsById() passing the new number
-        if (clientRepository.existsById(newPassportNumber)) {
-            throw new IllegalStateException("Passport no." + newPassportNumber + " already taken");
+        // 3.Update User Fields (Inherited)
+        if (newDetails.getEmail() != null && !newDetails.getEmail().equals(existingClient.getEmail())) {
+            if (clientRepository.existsByEmail(newDetails.getEmail())) {
+                throw new IllegalStateException("Email " + newDetails.getEmail() + " already in use");
+            }
+            existingClient.setEmail(newDetails.getEmail());
         }
+        if (newDetails.getFirstName() != null) existingClient.setFirstName(newDetails.getFirstName());
+        if (newDetails.getLastName() != null) existingClient.setLastName(newDetails.getLastName());
+        if (newDetails.getAddress() != null) existingClient.setAddress(newDetails.getAddress());
+        if (newDetails.getPhoneNumber() != null) existingClient.setPhoneNumber(newDetails.getPhoneNumber());
+        if (newDetails.getBirthDate() != null) existingClient.setBirthDate(newDetails.getBirthDate());
 
-        // Does the OLD record exist?
-        if (!clientRepository.existsById(oldPassportNumber)) {
-            throw new NoSuchElementException("Client " + oldPassportNumber + " not found");
-        }
-
-        // Force the ID update by query stated in repo
-        clientRepository.updatePassportNumber(oldPassportNumber, newPassportNumber);
-
-        // Return the object manually since we know the only field
-        Client updatedClient = new Client();
-        updatedClient.setPassportNumber(newPassportNumber);
-        return updatedClient;
+        // 4.Return updated entity
+        return existingClient;
     }
 
     // DELETE
+    @Transactional // Required for deleteBy... derived queries
     public void deleteClient(String passportNumber) {
-        boolean exists = clientRepository.existsById(passportNumber);
-
-        // 404 NOT FOUND
-        if (!exists) {
+        if (!clientRepository.existsByPassportNumber(passportNumber)) {
             throw new NoSuchElementException("Client with passport no. " + passportNumber + " does not exist");
         }
-
-        clientRepository.deleteById(passportNumber);
+        clientRepository.deleteByPassportNumber(passportNumber);
     }
 }

@@ -6,6 +6,7 @@ import org.hibernate.proxy.HibernateProxy;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -19,21 +20,22 @@ public class Flight {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "flight_id")
     private Long flightId;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "flight_number", nullable = false, unique = true)
     private String flightNumber;
 
-    @Column(nullable = false)
+    @Column(name = "departure_city", nullable = false)
     private String departureCity;
 
-    @Column(nullable = false)
+    @Column(name = "arrival_city", nullable = false)
     private String arrivalCity;
 
-    @Column(nullable = false)
+    @Column(name = "departure_date", nullable = false)
     private LocalDateTime departureDate;
 
-    @Column(nullable = false)
+    @Column(name = "arrival_date", nullable = false)
     private LocalDateTime arrivalDate;
 
     @ManyToOne
@@ -51,14 +53,28 @@ public class Flight {
     @ToString.Exclude // Best Practice: Prevent lazy-loading triggers when printing logs
     private Plane plane;
 
-    @Column(nullable = false)
+    @Column(name = "number_of_seats", nullable = false)
     private Integer numberOfSeats;
 
-    @Column(nullable = false)
+    @Column(name = "business_price", nullable = false)
     private BigDecimal businessPrice;
 
-    @Column(nullable = false)
+    @Column(name = "economy_price", nullable = false)
     private BigDecimal economyPrice;
+
+    // Foreign Key mapping
+    // orphanRemoval : The reward still exists in the MilesReward table. It is just "unlinked"
+    @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<MilesReward> rewards;
+
+    // Foreign key mapping
+    // orphanRemoval : The booking still exists in the Book table. It is just "unlinked"
+    @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<Book> bookings;
+
+
 
     @Override
     public final boolean equals(Object o) {

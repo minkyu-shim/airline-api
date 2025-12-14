@@ -1,44 +1,35 @@
 package com.epita.airlineapi.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
+import java.util.List;
 import java.util.Objects;
 
 @Entity
 @Table(name = "clients")
-public class Client {
-
-    @Id
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(callSuper = true) // Prints User fields (Name, Email) too
+@SuperBuilder  // Allows building Client + User fields together
+@PrimaryKeyJoinColumn(name = "user_id") // Ensures the DB foreign key is named "user_id"
+public class Client extends User {
+    @Column(name = "passport_number", nullable = false, unique = true)
     private String passportNumber;
 
-    public Client() {
+    // Foreign key mapping
+    // orphanRemoval : The reward still exists in the MilesReward table. It is just "unlinked"
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude  // Critical to prevent Client -> MilesReward -> Client infinite loop / StackOverflowError
+    private List<MilesReward> rewards;
 
-    }
+    // Foreign key mapping
+    // orphanRemoval : The booking still exists in the Book table. It is just "unlinked"
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<Book> bookings;
 
-    public Client(String passportNumber) {
-        this.passportNumber = passportNumber;
-    }
-
-    public String getPassportNumber() {
-        return passportNumber;
-    }
-
-    public void setPassportNumber(String passportNumber) {
-        this.passportNumber = passportNumber;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Client client = (Client) o;
-        return Objects.equals(passportNumber, client.passportNumber);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(passportNumber);
-    }
 }

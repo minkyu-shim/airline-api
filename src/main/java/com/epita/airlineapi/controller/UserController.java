@@ -7,10 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("api/v1/user")
+@RequestMapping("/api/v1/users") // Added leading slash
 public class UserController {
 
     private final UserService userService;
@@ -19,56 +18,51 @@ public class UserController {
         this.userService = userService;
     }
 
+    // GET ALL
     @GetMapping
     public ResponseEntity<List<User>> getUsers() {
         List<User> users = userService.getUsers();
+
         if (users.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return ResponseEntity.noContent().build();
         }
-        return new ResponseEntity<>(users, HttpStatus.OK);
+
+        return ResponseEntity.ok(users);
     }
 
-    @GetMapping(path = "{userId}")
+    // GET ONE
+    @GetMapping("/{userId}")
     public ResponseEntity<User> getUserById(@PathVariable Long userId) {
-        Optional<User> user = userService.getUserById(userId);
-        // if present return OK, else return NOT_FOUND
-        return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        // No try-catch needed.
+        // Service throws NoSuchElementException -> GlobalHandler returns 404
+        User user = userService.getUserById(userId);
+        return ResponseEntity.ok(user);
     }
 
+    // CREATE
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
-        try {
-            User createdUser = userService.saveUser(user);
-            return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
-        } catch (IllegalStateException e) {
-            // Handles email taken error
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        // No try-catch needed.
+        // Service throws IllegalStateException (if email taken) -> GlobalHandler returns 400/409
+        User createdUser = userService.saveUser(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
-    @DeleteMapping(path = "{userId}")
+    // UPDATE
+    @PutMapping("/{userId}")
+    public ResponseEntity<User> updateUser(@PathVariable Long userId, @RequestBody User userUpdate) {
+        // No try-catch needed.
+        // Handles 404 (User not found) and 400 (Email taken/Invalid data) automatically
+        User updatedUser = userService.updateUser(userId, userUpdate);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    // DELETE
+    @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
-        // Check if exists before deleting
-        if (userService.getUserById(userId).isPresent()) {
-            userService.deleteUser(userId);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @PutMapping(path = "{userId}")
-    public ResponseEntity<String> updateUser(
-            @PathVariable("userId") Long userId,
-            @RequestBody User userUpdate) { // @RequestBody allows sending a JSON object
-
-        try {
-            // We pass the ID from the path, and the data from the body
-            userService.updateUser(userId, userUpdate);
-            return new ResponseEntity<>("User updated successfully", HttpStatus.OK);
-        } catch (IllegalStateException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        // No try-catch needed.
+        // Service throws NoSuchElementException -> GlobalHandler returns 404
+        userService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
     }
 }

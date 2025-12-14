@@ -2,121 +2,119 @@ package com.epita.airlineapi.service;
 
 import com.epita.airlineapi.model.Flight;
 import com.epita.airlineapi.repository.FlightRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class FlightService {
+
     private final FlightRepository flightRepository;
 
     public FlightService(FlightRepository flightRepository) {
         this.flightRepository = flightRepository;
     }
 
+    // GET ALL
     public List<Flight> getFlights() {
         return flightRepository.findAll();
     }
 
-    public Optional<Flight> getFlightById(Long flightId) {
-        return flightRepository.findById(flightId);
+    // GET ONE (By ID)
+    public Flight getFlightById(Long flightId) {
+        return flightRepository.findById(flightId)
+                .orElseThrow(() -> new NoSuchElementException("Flight with id " + flightId + " not found"));
     }
 
+    // GET ONE (By Flight Number)
+    public Flight getFlightByNumber(String flightNumber) {
+        return flightRepository.findByFlightNumber(flightNumber)
+                .orElseThrow(() -> new NoSuchElementException("Flight " + flightNumber + " not found"));
+    }
+
+    // CREATE
     public Flight saveFlight(Flight flight) {
+        // 1.Check Unique Flight Number
+        if (flightRepository.existsByFlightNumber(flight.getFlightNumber())) {
+            throw new IllegalStateException("Flight number " + flight.getFlightNumber() + " already exists");
+        }
+
+        // 2.Validate Dates
+        validateFlightDates(flight);
+
         return flightRepository.save(flight);
     }
 
-    public void deleteFlight(Long flightId) {
-        boolean exists = flightRepository.existsById(flightId);
-
-        if (!exists) {
-            throw new EntityNotFoundException("Flight with id " + flightId + " does not exist");
-        }
-
-        flightRepository.deleteById(flightId);
-    }
-
+    // UPDATE
     @Transactional
-    public void updateFlight(Long flightId, Flight updateRequest) {
+    public Flight updateFlight(Long flightId, Flight updateRequest) {
+        Flight flight = getFlightById(flightId);
 
-        // 1. Retrieve existing Flight
-        Flight flight = flightRepository.findById(flightId)
-                .orElseThrow(() -> new IllegalStateException(
-                        "Flight with id " + flightId + " does not exist"
-                ));
-
-        // 2. Update Flight Number (String check remains)
+        // 1.Update Flight Number (Check uniqueness if changed)
         if (updateRequest.getFlightNumber() != null &&
                 !updateRequest.getFlightNumber().isEmpty() &&
                 !Objects.equals(flight.getFlightNumber(), updateRequest.getFlightNumber())) {
+
+            if (flightRepository.existsByFlightNumber(updateRequest.getFlightNumber())) {
+                throw new IllegalStateException("Flight number " + updateRequest.getFlightNumber() + " already exists");
+            }
             flight.setFlightNumber(updateRequest.getFlightNumber());
         }
 
-        // 3. Update Departure City (String check remains)
-        if (updateRequest.getDepartureCity() != null &&
-                !updateRequest.getDepartureCity().isEmpty() &&
-                !Objects.equals(flight.getDepartureCity(), updateRequest.getDepartureCity())) {
+        // 2.Update Cities
+        if (updateRequest.getDepartureCity() != null && !updateRequest.getDepartureCity().isEmpty()) {
             flight.setDepartureCity(updateRequest.getDepartureCity());
         }
-
-        // 4. Update Arrival City (String check remains)
-        if (updateRequest.getArrivalCity() != null &&
-                !updateRequest.getArrivalCity().isEmpty() &&
-                !Objects.equals(flight.getArrivalCity(), updateRequest.getArrivalCity())) {
+        if (updateRequest.getArrivalCity() != null && !updateRequest.getArrivalCity().isEmpty()) {
             flight.setArrivalCity(updateRequest.getArrivalCity());
         }
 
-        // 5. Update Departure Date
-        if (updateRequest.getDepartureDate() != null &&
-                !Objects.equals(flight.getDepartureDate(), updateRequest.getDepartureDate())) {
+        // 3.Update Dates & Re-validate
+        boolean datesChanged = false;
+        if (updateRequest.getDepartureDate() != null) {
             flight.setDepartureDate(updateRequest.getDepartureDate());
+            datesChanged = true;
         }
-
-        // 6. Update Arrival Date
-        if (updateRequest.getArrivalDate() != null &&
-                !Objects.equals(flight.getArrivalDate(), updateRequest.getArrivalDate())) {
+        if (updateRequest.getArrivalDate() != null) {
             flight.setArrivalDate(updateRequest.getArrivalDate());
+            datesChanged = true;
         }
 
-        // 7. Update Departure Airport
-        if (updateRequest.getDepartureAirport() != null &&
-                !Objects.equals(flight.getDepartureAirport(), updateRequest.getDepartureAirport())) {
-            flight.setDepartureAirport(updateRequest.getDepartureAirport());
+        if (datesChanged) {
+            validateFlightDates(flight);
         }
 
-        // 8. Update Arrival Airport
-        if (updateRequest.getArrivalAirport() != null &&
-                !Objects.equals(flight.getArrivalAirport(), updateRequest.getArrivalAirport())) {
-            flight.setArrivalAirport(updateRequest.getArrivalAirport());
-        }
+        // 4.Update Relationships (Airports & Plane)
+        // Ideally, you should fetch these entities from their repositories to ensure they exist
+        if (updateRequest.getDepartureAirport() != null) flight.setDepartureAirport(updateRequest.getDepartureAirport());
+        if (updateRequest.getArrivalAirport() != null) flight.setArrivalAirport(updateRequest.getArrivalAirport());
+        if (updateRequest.getPlane() != null) flight.setPlane(updateRequest.getPlane());
 
-        // 9. Update Plane
-        if (updateRequest.getPlane() != null &&
-                !Objects.equals(flight.getPlane(), updateRequest.getPlane())) {
-            flight.setPlane(updateRequest.getPlane());
-        }
+        // 5.Update Pricing/Seats
+        if (updateRequest.getNumberOfSeats() != null) flight.setNumberOfSeats(updateRequest.getNumberOfSeats());
+        if (updateRequest.getBusinessPrice() != null) flight.setBusinessPrice(updateRequest.getBusinessPrice());
+        if (updateRequest.getEconomyPrice() != null) flight.setEconomyPrice(updateRequest.getEconomyPrice());
 
-        // 10. Update Number of Seats
-        if (updateRequest.getNumberOfSeats() != null &&
-                !Objects.equals(flight.getNumberOfSeats(), updateRequest.getNumberOfSeats())) {
-            flight.setNumberOfSeats(updateRequest.getNumberOfSeats());
-        }
-
-        // 11. Update Business Price
-        if (updateRequest.getBusinessPrice() != null &&
-                !Objects.equals(flight.getBusinessPrice(), updateRequest.getBusinessPrice())) {
-            flight.setBusinessPrice(updateRequest.getBusinessPrice());
-        }
-
-        // 12. Update Economy Price
-        if (updateRequest.getEconomyPrice() != null &&
-                !Objects.equals(flight.getEconomyPrice(), updateRequest.getEconomyPrice())) {
-            flight.setEconomyPrice(updateRequest.getEconomyPrice());
-        }
+        return flight;
     }
 
+    // DELETE
+    public void deleteFlight(Long flightId) {
+        if (!flightRepository.existsById(flightId)) {
+            throw new NoSuchElementException("Flight with id " + flightId + " not found");
+        }
+        flightRepository.deleteById(flightId);
+    }
+
+    // Helper Method for Validation
+    private void validateFlightDates(Flight flight) {
+        if (flight.getDepartureDate() != null && flight.getArrivalDate() != null) {
+            if (flight.getArrivalDate().isBefore(flight.getDepartureDate())) {
+                throw new IllegalStateException("Arrival date cannot be before departure date");
+            }
+        }
+    }
 }
