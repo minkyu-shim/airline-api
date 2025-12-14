@@ -37,12 +37,6 @@ public class FlightController {
         return ResponseEntity.ok(flightService.getFlightById(flightId));
     }
 
-    // GET ONE (By Flight Number)
-    @GetMapping(path = "/number/{flightNumber}")
-    public ResponseEntity<Flight> getFlightByNumber(@PathVariable String flightNumber) {
-        return ResponseEntity.ok(flightService.getFlightByNumber(flightNumber));
-    }
-
     // CREATE
     @PostMapping
     public ResponseEntity<Flight> createFlight(@RequestBody Flight flight) {

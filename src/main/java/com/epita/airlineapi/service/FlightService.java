@@ -50,12 +50,8 @@ public class FlightService {
 
     // CREATE
     public Flight saveFlight(Flight flight) {
-        // 1.Check Unique Flight Number
-        if (flightRepository.existsByFlightNumber(flight.getFlightNumber())) {
-            throw new IllegalStateException("Flight number " + flight.getFlightNumber() + " already exists");
-        }
 
-        // 2.Validate Dates
+        // Validate Dates
         validateFlightDates(flight);
 
         return flightRepository.save(flight);
@@ -66,14 +62,8 @@ public class FlightService {
     public Flight updateFlight(Long flightId, Flight updateRequest) {
         Flight flight = getFlightById(flightId);
 
-        // 1.Update Flight Number (Check uniqueness if changed)
-        if (updateRequest.getFlightNumber() != null &&
-                !updateRequest.getFlightNumber().isEmpty() &&
-                !Objects.equals(flight.getFlightNumber(), updateRequest.getFlightNumber())) {
-
-            if (flightRepository.existsByFlightNumber(updateRequest.getFlightNumber())) {
-                throw new IllegalStateException("Flight number " + updateRequest.getFlightNumber() + " already exists");
-            }
+        // 1.Update Flight Number
+        if (updateRequest.getFlightNumber() != null && !updateRequest.getFlightNumber().isEmpty()) {
             flight.setFlightNumber(updateRequest.getFlightNumber());
         }
 

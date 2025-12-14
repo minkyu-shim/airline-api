@@ -24,7 +24,7 @@ public class Flight {
     @Column(name = "flight_id")
     private Long flightId;
 
-    @Column(name = "flight_number", nullable = false, unique = true)
+    @Column(name = "flight_number", nullable = false)
     private String flightNumber;
 
     @Column(name = "departure_city", nullable = false)
