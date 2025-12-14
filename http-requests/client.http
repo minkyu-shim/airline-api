@@ -1,0 +1,56 @@
+### 1. Create a new Client (POST)
+# Expected: 201 Created
+# Response body should be the created client object with a generated ID.
+POST http://localhost:8080/api/v1/clients
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "address": "123 Main St",
+  "email": "john.doe@example.com",
+  "phoneNumber": "555-1234",
+  "birthDate": "1990-01-01",
+  "passportNumber": "X1234567"
+}
+
+### 2. Get All Clients (GET)
+# Expected: 200 OK
+# Response body should be a JSON array of all clients.
+GET http://localhost:8080/api/v1/clients
+
+### 3. Get Client by Passport Number (GET)
+# Expected: 200 OK
+# Response body should be the client with passport number X1234567.
+GET http://localhost:8080/api/v1/clients/X1234567
+
+### 4. Update Client (PUT)
+# Expected: 200 OK
+# Response body should be the updated client object.
+PUT http://localhost:8080/api/v1/clients/X1234567
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "address": "456 Oak Ave",
+  "email": "john.doe@example.com",
+  "phoneNumber": "555-5678",
+  "birthDate": "1990-01-01",
+  "passportNumber": "X1234567"
+}
+
+### 5. Verify Update (GET)
+# Expected: 200 OK
+# Response body should be the client with the updated address "456 Oak Ave".
+GET http://localhost:8080/api/v1/clients/X1234567
+
+### 6. Delete Client (DELETE)
+# Expected: 204 No Content
+# No response body.
+DELETE http://localhost:8080/api/v1/clients/X1234567
+
+### 7. Verify Deletion (GET)
+# Expected: 404 Not Found
+# Error response body.
+GET http://localhost:8080/api/v1/clients/X1234567

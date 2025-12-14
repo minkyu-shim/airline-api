@@ -1,6 +1,7 @@
 ### 1. Create a new Plane (POST)
 # Expected: 201 Created
-POST http://localhost:8080/api/v1/plane
+# Response body should be the created plane object with a generated ID.
+POST http://localhost:8080/api/v1/planes
 Content-Type: application/json
 
 {
@@ -10,19 +11,19 @@ Content-Type: application/json
 }
 
 ### 2. Get all Planes (GET)
-# Expected: 200 OK (List of planes)
-# Or 204 No Content if the list is empty
-GET http://localhost:8080/api/v1/plane
+# Expected: 200 OK
+# Response body should be a JSON array of all planes.
+GET http://localhost:8080/api/v1/planes
 
 ### 3. Get Plane by ID (GET)
-# Replace '1' with the actual ID returned in step 1.
-# Expected: 200 OK or 404 Not Found
-GET http://localhost:8080/api/v1/plane/1
+# Expected: 200 OK
+# Response body should be the plane with ID 1.
+GET http://localhost:8080/api/v1/planes/1
 
 ### 4. Update Plane (PUT)
-# We update ONLY the model and year. "planeBrand" is null (not sent).
 # Expected: 200 OK
-PUT http://localhost:8080/api/v1/plane/1
+# Response body should be the updated plane object.
+PUT http://localhost:8080/api/v1/planes/1
 Content-Type: application/json
 
 {
@@ -31,13 +32,14 @@ Content-Type: application/json
 }
 
 ### 5. Verify Update (GET)
-# Check if model/year changed BUT "planeBrand" remains "Airbus".
-GET http://localhost:8080/api/v1/plane/1
+# Expected: 200 OK
+# Response body should be the plane with the updated model and year.
+GET http://localhost:8080/api/v1/planes/1
 
 ### 6. Test Error: Update Non-Existent Plane (PUT)
-# Try updating a plane ID that doesn't exist (e.g., 999).
-# Expected: 400 Bad Request (based on your controller's catch block)
-PUT http://localhost:8080/api/v1/plane/999
+# Expected: 404 Not Found
+# Error response body.
+PUT http://localhost:8080/api/v1/planes/999
 Content-Type: application/json
 
 {
@@ -47,8 +49,10 @@ Content-Type: application/json
 
 ### 7. Delete Plane (DELETE)
 # Expected: 204 No Content
-DELETE http://localhost:8080/api/v1/plane/1
+# No response body.
+DELETE http://localhost:8080/api/v1/planes/1
 
 ### 8. Verify Deletion (GET)
 # Expected: 404 Not Found
-GET http://localhost:8080/api/v1/plane/1
+# Error response body.
+GET http://localhost:8080/api/v1/planes/1

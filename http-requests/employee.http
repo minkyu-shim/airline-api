@@ -1,0 +1,61 @@
+### 1. Create a new Employee (POST)
+# Expected: 201 Created
+# Response body should be the created employee object with a generated ID.
+POST http://localhost:8080/api/v1/employees
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "address": "789 Pine St",
+  "email": "jane.smith@example.com",
+  "phoneNumber": "555-8765",
+  "birthDate": "1985-05-10",
+  "employeeNumber": 12345,
+  "profession": "Pilot",
+  "title": "Captain"
+}
+
+### 2. Get All Employees (GET)
+# Expected: 200 OK
+# Response body should be a JSON array of all employees.
+GET http://localhost:8080/api/v1/employees
+
+### 3. Get Employee by employeeNumber (GET)
+# Expected: 200 OK
+# Response body should be the employee with employeeNumber 12345.
+GET http://localhost:8080/api/v1/employees/12345
+
+### 4. Update Employee (PUT)
+# Expected: 200 OK
+# Response body should be the updated employee object.
+PUT http://localhost:8080/api/v1/employees/12345
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "address": "789 Pine St",
+  "email": "jane.smith@example.com",
+  "phoneNumber": "555-8765",
+  "birthDate": "1985-05-10",
+  "employeeNumber": 12345,
+  "profession": "Pilot",
+  "title": "Senior Captain"
+}
+
+### 5. Verify Update (GET)
+# Expected: 200 OK
+# Response body should be the employee with the updated title "Senior Captain".
+GET http://localhost:8080/api/v1/employees/12345
+
+### 6. Delete Employee (DELETE)
+# Expected: 204 No Content
+# No response body.
+DELETE http://localhost:8080/api/v1/employees/12345
+
+### 7. Verify Deletion (GET)
+# Expected: 404 Not Found
+# Error response body.
+GET http://localhost:8080/api/v1/employees/12345
+

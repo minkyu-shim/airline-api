@@ -11,9 +11,8 @@ A backend web application that manages booking for airline company Timeout Airli
 3.  **Airport Management:** REST API to add, display, update, and delete Airports.
 4.  **Flight Management:** REST API to add, display, update, and delete Flights.
 5.  **Client/Employee Management:** REST API to create, read, update, and delete Employees/Clients.
-6.  **Flight Search:** A search feature to find available flights based on departure city, destination city, and departure date.
-7.  **Flight Booking:** A REST API for customers to book a flight.
-8.  **Miles Reward Program:** Record each booking and generate a random discount code for a user after 3 flights within the same civil year.
+6.  **Flight Booking:** A REST API for customers to book a flight.
+7.  **Miles Reward Program:** Record each booking and generate a random discount code for a user after 3 flights within the same civil year. (Partially implemented)
 
 ## Data Model
 
@@ -84,6 +83,14 @@ The following are the available API endpoints:
 -   `PUT /api/v1/airport/{airportId}`: Update an airport
 -   `DELETE /api/v1/airport/{airportId}`: Delete an airport
 
+### Book
+
+-   `GET /api/v1/books`: Get all books
+-   `GET /api/v1/books/{id}`: Get a book by ID
+-   `POST /api/v1/books`: Create a new book
+-   `PUT /api/v1/books/{id}`: Update a book
+-   `DELETE /api/v1/books/{id}`: Delete a book
+
 ### Client
 
 -   `GET /api/v1/clients`: Get all clients
@@ -99,6 +106,14 @@ The following are the available API endpoints:
 -   `POST /api/v1/flight`: Create a new flight
 -   `PUT /api/v1/flight/{flightId}`: Update a flight
 -   `DELETE /api/v1/flight/{flightId}`: Delete a flight
+
+### Miles Reward
+
+-   `GET /api/miles-rewards`: Get all rewards
+-   `GET /api/miles-rewards/{id}`: Get a reward by ID
+-   `POST /api/miles-rewards`: Create a new reward
+-   `PUT /api/miles-rewards/{id}`: Update a reward
+-   `DELETE /api/miles-rewards/{id}`: Delete a reward
 
 ### Plane
 
@@ -119,9 +134,6 @@ The following are the available API endpoints:
 ## Future Work
 
 -   **Implement Flight Search:** Create the endpoint for searching available flights.
--   **Implement Flight Booking:** Build the API to allow users to book flights.
--   **Implement Miles Reward Program:** Add the `MilesReward` table and logic for generating discount codes.
--   **Implement Employee Role:** Add the `Employee` model and associated API endpoints.
 -   **Add Frontend UI:** Connect a basic frontend to the backend API.
 -   **Enhance Seat Management:** Ensure a user cannot book a flight with no available seats.
 -   **Testing:** Prepare comprehensive test scenarios and data for the project presentation.

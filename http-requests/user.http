@@ -1,6 +1,7 @@
 ### 1. Create a new User (POST)
 # Expected: 201 Created
-POST http://localhost:8080/api/v1/user
+# Response body should be the created user object with a generated ID.
+POST http://localhost:8080/api/v1/users
 Content-Type: application/json
 
 {
@@ -13,18 +14,19 @@ Content-Type: application/json
 }
 
 ### 2. Get all Users (GET)
-# Expected: 200 OK (List of users)
-GET http://localhost:8080/api/v1/user
+# Expected: 200 OK
+# Response body should be a JSON array of all users.
+GET http://localhost:8080/api/v1/users
 
 ### 3. Get User by ID (GET)
-# Replace '1' with the actual ID if different
 # Expected: 200 OK
-GET http://localhost:8080/api/v1/user/1
+# Response body should be the user with ID 1.
+GET http://localhost:8080/api/v1/users/1
 
 ### 4. Update User (PUT)
-# We update ONLY the phone and address.
 # Expected: 200 OK
-PUT http://localhost:8080/api/v1/user/1
+# Response body should be the updated user object.
+PUT http://localhost:8080/api/v1/users/1
 Content-Type: application/json
 
 {
@@ -33,14 +35,14 @@ Content-Type: application/json
 }
 
 ### 5. Verify Update (GET)
-# Check if phone changed BUT firstName remains "John".
-# If firstName is null here, you have the "Null Trap" bug.
-GET http://localhost:8080/api/v1/user/1
+# Expected: 200 OK
+# Response body should be the user with the updated phone number and address.
+GET http://localhost:8080/api/v1/users/1
 
 ### 6. Test Error: Duplicate Email (POST)
-# Try creating another user with the SAME email.
-# Expected: 400 Bad Request
-POST http://localhost:8080/api/v1/user
+# Expected: 400 Bad Request or 409 Conflict
+# Error response body.
+POST http://localhost:8080/api/v1/users
 Content-Type: application/json
 
 {
@@ -54,8 +56,10 @@ Content-Type: application/json
 
 ### 7. Delete User (DELETE)
 # Expected: 204 No Content
-DELETE http://localhost:8080/api/v1/user/1
+# No response body.
+DELETE http://localhost:8080/api/v1/users/1
 
 ### 8. Verify Deletion (GET)
 # Expected: 404 Not Found
-GET http://localhost:8080/api/v1/user/1
+# Error response body.
+GET http://localhost:8080/api/v1/users/1
