@@ -1,5 +1,6 @@
 package com.epita.airlineapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
@@ -66,12 +67,14 @@ public class Flight {
     // orphanRemoval : The reward still exists in the MilesReward table. It is just "unlinked"
     @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
+    @JsonIgnore
     private List<MilesReward> rewards;
 
     // Foreign key mapping
     // orphanRemoval : The booking still exists in the Book table. It is just "unlinked"
     @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
+    @JsonIgnore
     private List<Book> bookings;
 
 
