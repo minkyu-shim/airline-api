@@ -1,0 +1,310 @@
+###
+### COMPREHENSIVE API TEST SUITE
+###
+### This file tests all major features of the Airline API in a sequential manner.
+### Deletion tests are moved to the end to ensure ID predictability.
+###
+### Test Order:
+### 1. Setup (Airports, Planes)
+### 2. Booking & Miles Reward System (Primary Feature)
+### 3. User, Client, Employee Management (Create, Read, Update)
+### 4. Flight Management & Search (Create, Read, Update)
+### 5. Cleanup - Deletion Tests
+###
+
+################################################################################
+### PART 1: SETUP - AIRPORTS & PLANES
+################################################################################
+
+### 1.1 Create Departure Airport: Paris
+# Expected: 201 Created
+POST http://localhost:8080/api/v1/airports
+Content-Type: application/json
+
+{
+  "airportName": "Charles de Gaulle",
+  "airportCountry": "France",
+  "airportCity": "Paris"
+}
+
+### 1.2 Create Arrival Airport: London
+# Expected: 201 Created
+POST http://localhost:8080/api/v1/airports
+Content-Type: application/json
+
+{
+  "airportName": "Heathrow",
+  "airportCountry": "UK",
+  "airportCity": "London"
+}
+
+### 1.3 Create a third Airport: Manchester for updates
+# Expected: 201 Created
+POST http://localhost:8080/api/v1/airports
+Content-Type: application/json
+
+{
+  "airportName": "Manchester Airport",
+  "airportCountry": "UK",
+  "airportCity": "Manchester"
+}
+
+### 1.4 Get all Airports to verify creation
+# Expected: 200 OK
+GET http://localhost:8080/api/v1/airports
+
+### 1.5 Create a Plane: Airbus A320
+# Expected: 201 Created
+POST http://localhost:8080/api/v1/planes
+Content-Type: application/json
+
+{
+  "planeBrand": "Airbus",
+  "planeModel": "A320",
+  "manufacturingYear": 2015
+}
+
+### 1.6 Create a second Plane: Boeing 777
+# Expected: 201 Created
+POST http://localhost:8080/api/v1/planes
+Content-Type: application/json
+
+{
+  "planeBrand": "Boeing",
+  "planeModel": "777",
+  "manufacturingYear": 2020
+}
+
+### 1.7 Get all Planes to verify creation
+# Expected: 200 OK
+GET http://localhost:8080/api/v1/planes
+
+
+################################################################################
+### PART 2: FEATURE 7 & 8 - BOOKING & MILES REWARD
+################################################################################
+
+### 2.1 Create a Client for booking tests
+# This is the first User created, so it will have userId: 1.
+POST http://localhost:8080/api/v1/clients
+Content-Type: application/json
+
+{
+  "firstName": "Booking",
+  "lastName": "Tester",
+  "address": "1 Booking Lane",
+  "email": "booking.tester.comprehensive@example.com",
+  "phoneNumber": "123-456-7890",
+  "birthDate": "1999-01-01",
+  "passportNumber": "BOOKC123"
+}
+
+### 2.2 Create a dedicated flight for booking
+# This is the first Flight created, so it will have flightId: 1.
+POST http://localhost:8080/api/v1/flights
+Content-Type: application/json
+
+{
+  "flightNumber": "BK001",
+  "departureCity": "Paris",
+  "arrivalCity": "London",
+  "departureDate": "2025-07-15T10:00:00",
+  "arrivalDate": "2025-07-15T11:20:00",
+  "numberOfSeats": 50,
+  "businessPrice": 300.00,
+  "economyPrice": 100.00,
+  "plane": { "planeId": 1 },
+  "departureAirport": { "airportId": 1 },
+  "arrivalAirport": { "airportId": 2 }
+}
+
+### 2.3 First Booking
+# Booking for userId: 1 on flightId: 1
+POST http://localhost:8080/api/v1/books
+Content-Type: application/json
+
+{
+  "client": { "userId": 1 },
+  "flight": { "flightId": 1 },
+  "typeOfSeat": "Economy"
+}
+
+### 2.4 Second Booking
+# Booking for userId: 1 on flightId: 1
+POST http://localhost:8080/api/v1/books
+Content-Type: application/json
+
+{
+  "client": { "userId": 1 },
+  "flight": { "flightId": 1 },
+  "typeOfSeat": "Business"
+}
+
+### 2.5 Third Booking
+# Booking for userId: 1 on flightId: 1
+POST http://localhost:8080/api/v1/books
+Content-Type: application/json
+
+{
+  "client": { "userId": 1 },
+  "flight": { "flightId": 1 },
+  "typeOfSeat": "Economy"
+}
+
+### 2.6 Trigger the Miles Reward and Discount Check
+# Trigger for clientId: 1 and flightId: 1
+POST http://localhost:8080/api/miles-rewards
+Content-Type: application/json
+
+{
+  "clientId": 1,
+  "flightId": 1,
+  "date": "2025-07-15"
+}
+
+### 2.7 Verify Discount Code Generation
+# Expected: 200 OK
+# The 'discountCode' field for the client should have a value.
+GET http://localhost:8080/api/v1/clients/BOOKC123
+
+
+################################################################################
+### PART 3: FEATURE 1 & 5 - USER, CLIENT, EMPLOYEE MANAGEMENT (CREATE, READ, UPDATE)
+################################################################################
+
+### 3.1 Create a new User
+# This is the second user, will get ID 2.
+POST http://localhost:8080/api/v1/users
+Content-Type: application/json
+
+{
+  "firstName": "Test",
+  "lastName": "User",
+  "email": "test.user.comprehensive@example.com",
+  "address": "123 Test St",
+  "phoneNumber": "111-222-3333",
+  "birthDate": "1992-02-02"
+}
+
+### 3.2 Get User by ID
+# Expected: 200 OK
+GET http://localhost:8080/api/v1/users/2
+
+### 3.3 Update User
+# Expected: 200 OK
+PUT http://localhost:8080/api/v1/users/2
+Content-Type: application/json
+
+{
+  "address": "456 Updated Ave"
+}
+
+### 3.4 Create a new Client
+# This is the third user, will get ID 3.
+POST http://localhost:8080/api/v1/clients
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Client",
+  "address": "789 Client Rd",
+  "email": "john.client.comprehensive@example.com",
+  "phoneNumber": "777-888-9999",
+  "birthDate": "1988-08-08",
+  "passportNumber": "COMPC888"
+}
+
+### 3.5 Create a new Employee
+# This is the fourth user, will get ID 4.
+POST http://localhost:8080/api/v1/employees
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Employee",
+  "address": "321 Employee Ln",
+  "email": "jane.employee.comprehensive@example.com",
+  "phoneNumber": "333-444-5555",
+  "birthDate": "1985-05-10",
+  "employeeNumber": 98765,
+  "profession": "Flight Attendant",
+  "title": "Senior Crew"
+}
+
+
+################################################################################
+### PART 4: FEATURE 4 & 6 - FLIGHT MANAGEMENT & SEARCH (CREATE, READ, UPDATE)
+################################################################################
+
+### 4.1 Create a new Flight
+# This is the second flight, will get ID 2.
+POST http://localhost:8080/api/v1/flights
+Content-Type: application/json
+
+{
+  "flightNumber": "CT101",
+  "departureCity": "Paris",
+  "arrivalCity": "London",
+  "departureDate": "2025-12-24T10:00:00",
+  "arrivalDate": "2025-12-24T11:20:00",
+  "numberOfSeats": 180,
+  "businessPrice": 450.00,
+  "economyPrice": 150.00,
+  "plane": { "planeId": 1 },
+  "departureAirport": { "airportId": 1 },
+  "arrivalAirport": { "airportId": 2 }
+}
+
+### 4.2 Get Flight by ID
+# Expected: 200 OK
+GET http://localhost:8080/api/v1/flights/2
+
+### 4.3 Update Flight
+# Expected: 200 OK
+PUT http://localhost:8080/api/v1/flights/2
+Content-Type: application/json
+
+{
+  "arrivalCity": "Manchester",
+  "arrivalAirport": { "airportId": 3 }
+}
+
+### 4.4 Search for available flights
+# Expected: 200 OK, should contain the updated flight CT101.
+GET http://localhost:8080/api/v1/flights/search?from=Paris&to=Manchester&date=2025-12-24
+
+
+################################################################################
+### PART 5: CLEANUP - DELETION TESTS
+################################################################################
+
+### 5.1 Delete User
+# Deletes User ID 2 ("Test User")
+DELETE http://localhost:8080/api/v1/users/2
+
+### 5.2 Verify User Deletion
+# Expected: 404 Not Found
+GET http://localhost:8080/api/v1/users/2
+
+### 5.3 Delete Flight
+# Deletes Flight ID 2 ("CT101")
+DELETE http://localhost:8080/api/v1/flights/2
+
+### 5.4 Verify Flight Deletion
+# Expected: 404 Not Found
+GET http://localhost:8080/api/v1/flights/2
+
+### 5.5 Delete Booking Client
+# Deletes the "Booking Tester" client from Part 2.
+# Note: Deleting a client/employee also deletes the underlying user.
+DELETE http://localhost:8080/api/v1/clients/BOOKC123
+
+### 5.6 Delete John Client
+DELETE http://localhost:8080/api/v1/clients/COMPC888
+
+### 5.7 Delete Employee
+DELETE http://localhost:8080/api/v1/employees/98765
+
+### 5.8 Delete Booking Flight
+# Deletes Flight ID 1 ("BK001") from Part 2.
+DELETE http://localhost:8080/api/v1/flights/1

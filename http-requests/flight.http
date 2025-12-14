@@ -72,10 +72,41 @@ Content-Type: application/json
   }
 }
 
+### 1.1 Create a new Flight for Search Test (POST)
+# Expected: 201 Created
+# Response body should be the created flight object with a generated ID.
+POST http://localhost:8080/api/v1/flights
+Content-Type: application/json
+
+{
+  "flightNumber": "BA202",
+  "departureCity": "London",
+  "arrivalCity": "Paris",
+  "departureDate": "2025-12-25T10:00:00",
+  "arrivalDate": "2025-12-25T11:15:00",
+  "numberOfSeats": 150,
+  "businessPrice": 250.00,
+  "economyPrice": 100.00,
+  "plane": {
+    "planeId": 1
+  },
+  "departureAirport": {
+    "airportId": 2
+  },
+  "arrivalAirport": {
+    "airportId": 1
+  }
+}
+
 ### 2. Get all Flights (GET)
 # Expected: 200 OK
 # Response body should be a JSON array of all flights.
 GET http://localhost:8080/api/v1/flights
+
+### 2.1 Search Flights (GET with params)
+# Expected: 200 OK
+# Response body should be a JSON array containing flights from London to Paris on 2025-12-25.
+GET http://localhost:8080/api/v1/flights/search?from=London&to=Paris&date=2025-12-25
 
 ### 3. Get Flight by ID (GET)
 # Expected: 200 OK
