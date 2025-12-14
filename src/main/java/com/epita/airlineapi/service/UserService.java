@@ -6,8 +6,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException; // Standard for 404
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class UserService {
@@ -18,79 +18,81 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+    // GET ALL
+    // Note: Because of JOINED inheritance, this returns Users, Clients, AND Employees.
     public List<User> getUsers() {
         return userRepository.findAll();
     }
 
-    public Optional<User> getUserById(Long userId) {
-        return userRepository.findById(userId);
+    // GET ONE
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                // CHANGED: IllegalStateException -> NoSuchElementException for 404 behavior
+                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " does not exist"));
     }
 
+    // CREATE
+    // ⚠️ CAUTION: Only use this for generic Users (Admins), not Clients/Employees.
     public User saveUser(User user) {
-        // Concrete Example: Check if email is taken before saving
-        Optional<User> userOptional = userRepository.findUserByEmail(user.getEmail());
-        if (userOptional.isPresent()) {
-            throw new IllegalStateException("Email taken");
+        if (userRepository.existsByEmail(user.getEmail())) {
+            // IllegalStateException is acceptable here for 409 Conflict or 400 Bad Request
+            throw new IllegalStateException("Email " + user.getEmail() + " is already taken");
         }
         return userRepository.save(user);
     }
 
+    // DELETE
     public void deleteUser(Long id) {
-        boolean exists = userRepository.existsById(id);
-        if (!exists) {
-            throw new IllegalStateException("User with id " + id + " does not exist");
+        if (!userRepository.existsById(id)) {
+            // CHANGED: IllegalStateException -> NoSuchElementException
+            throw new NoSuchElementException("User with id " + id + " does not exist");
         }
         userRepository.deleteById(id);
     }
 
+    // UPDATE
     @Transactional
-    public void updateUser(Long userId, User updateRequest) {
-        // 1. Retrieve the existing user
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalStateException("User with id " + userId + " does not exist"));
+    public User updateUser(Long userId, User updateRequest) {
+        User user = getUserById(userId); // Re-uses the 404 check above
 
-        // 2. Update First Name
-        if (updateRequest.getFirstName() != null &&
-                !updateRequest.getFirstName().isEmpty() &&
+        // 1.Common Fields Update
+        if (updateRequest.getFirstName() != null && !updateRequest.getFirstName().isEmpty() &&
                 !Objects.equals(user.getFirstName(), updateRequest.getFirstName())) {
             user.setFirstName(updateRequest.getFirstName());
         }
 
-        // 3. Update Last Name
-        if (updateRequest.getLastName() != null &&
-                !updateRequest.getLastName().isEmpty() &&
+        if (updateRequest.getLastName() != null && !updateRequest.getLastName().isEmpty() &&
                 !Objects.equals(user.getLastName(), updateRequest.getLastName())) {
             user.setLastName(updateRequest.getLastName());
         }
 
-        // 4. Update Email (With validation)
-        if (updateRequest.getEmail() != null &&
-                !updateRequest.getEmail().isEmpty() &&
+        // 2.Email Update (Smart Check)
+        if (updateRequest.getEmail() != null && !updateRequest.getEmail().isEmpty() &&
                 !Objects.equals(user.getEmail(), updateRequest.getEmail())) {
 
-            Optional<User> userOptional = userRepository.findUserByEmail(updateRequest.getEmail());
-            if (userOptional.isPresent()) {
-                throw new IllegalStateException("Email taken");
+            // Only check DB if the email is actually changing
+            if (userRepository.existsByEmail(updateRequest.getEmail())) {
+                throw new IllegalStateException("Email " + updateRequest.getEmail() + " is already taken");
             }
             user.setEmail(updateRequest.getEmail());
         }
 
-        // 5. Update Address (Address can be optional/nullable, so we might not check isEmpty)
+        // 3.Other fields
         if (updateRequest.getAddress() != null &&
                 !Objects.equals(user.getAddress(), updateRequest.getAddress())) {
             user.setAddress(updateRequest.getAddress());
         }
 
-        // 6. Update Phone Number
         if (updateRequest.getPhoneNumber() != null &&
                 !Objects.equals(user.getPhoneNumber(), updateRequest.getPhoneNumber())) {
             user.setPhoneNumber(updateRequest.getPhoneNumber());
         }
 
-        // 7. Update Birth Date
         if (updateRequest.getBirthDate() != null &&
                 !Objects.equals(user.getBirthDate(), updateRequest.getBirthDate())) {
             user.setBirthDate(updateRequest.getBirthDate());
         }
+
+        return user; // Dirty checking handles the save
     }
 }

@@ -7,62 +7,56 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("api/v1/airport")
+@RequestMapping("api/v1/airports")
 public class AirportController {
+
     private final AirportService airportService;
 
     public AirportController(AirportService airportService) {
         this.airportService = airportService;
     }
 
+    // GET ALL
     @GetMapping
     public ResponseEntity<List<Airport>> getAirports() {
         List<Airport> airports = airportService.getAirports();
-
         if (airports.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return ResponseEntity.noContent().build();
         }
-
-        return new ResponseEntity<>(airports, HttpStatus.OK);
+        return ResponseEntity.ok(airports);
     }
 
-    @GetMapping(path = "{airportId}")
+    // GET ONE
+    @GetMapping(path = "/{airportId}")
     public ResponseEntity<Airport> getAirportById(@PathVariable Long airportId) {
-        Optional<Airport> airport = airportService.getAirportById(airportId);
-
-        return airport.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        // Service throws NoSuchElementException if missing -> Caught by GlobalHandler (404)
+        return ResponseEntity.ok(airportService.getAirportById(airportId));
     }
 
+    // CREATE
     @PostMapping
     public ResponseEntity<Airport> createAirport(@RequestBody Airport airport) {
         Airport createdAirport = airportService.saveAirport(airport);
-        return new ResponseEntity<>(createdAirport, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdAirport);
     }
 
-    @DeleteMapping(path = "{airportId}")
+    // UPDATE
+    @PutMapping(path = "/{airportId}")
+    public ResponseEntity<Airport> updateAirport(
+            @PathVariable Long airportId,
+            @RequestBody Airport airportUpdate) {
+
+        // Returns the updated JSON object
+        Airport updated = airportService.updateAirport(airportId, airportUpdate);
+        return ResponseEntity.ok(updated);
+    }
+
+    // DELETE
+    @DeleteMapping(path = "/{airportId}")
     public ResponseEntity<Void> deleteAirport(@PathVariable Long airportId) {
-        if (airportService.getAirportById(airportId).isPresent()) {
-            airportService.deleteAirport(airportId);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else  {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @PutMapping(path = "{airportId}")
-    public ResponseEntity<String> updateAirport(
-            @PathVariable("airportId") Long airportId,
-            @RequestBody Airport airportUpdate
-    ) {
-        try {
-            airportService.updateAirport(airportId, airportUpdate);
-            return new ResponseEntity<>("Airport updated successfully", HttpStatus.OK);
-        } catch (IllegalStateException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        airportService.deleteAirport(airportId);
+        return ResponseEntity.noContent().build();
     }
 }

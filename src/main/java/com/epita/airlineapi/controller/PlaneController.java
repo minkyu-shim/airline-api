@@ -7,62 +7,61 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("api/v1/plane")
+@RequestMapping("/api/v1/planes") // Added leading slash for best practice
 public class PlaneController {
+
     private final PlaneService planeService;
 
-    public PlaneController(PlaneService planeService){
+    public PlaneController(PlaneService planeService) {
         this.planeService = planeService;
     }
 
+    // GET ALL
     @GetMapping
-    public ResponseEntity<?> getPlanes() {
+    public ResponseEntity<List<Plane>> getPlanes() {
         List<Plane> planes = planeService.getPlanes();
 
+        // Returning 204 No Content if empty is a valid design choice
         if (planes.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return ResponseEntity.noContent().build();
         }
 
-        return new ResponseEntity<>(planes, HttpStatus.OK);
+        return ResponseEntity.ok(planes);
     }
 
-    @GetMapping(path = "{planeId}")
+    // GET ONE
+    @GetMapping("/{planeId}")
     public ResponseEntity<Plane> getPlaneById(@PathVariable Long planeId) {
-        Optional<Plane> plane = planeService.getPlaneById(planeId);
-
-        return plane.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        // No try-catch needed.
+        // If planeId doesn't exist, Service throws NoSuchElementException -> GlobalHandler catches it.
+        Plane plane = planeService.getPlaneById(planeId);
+        return ResponseEntity.ok(plane);
     }
 
+    // CREATE
     @PostMapping
     public ResponseEntity<Plane> createPlane(@RequestBody Plane plane) {
         Plane createdPlane = planeService.savePlane(plane);
-        return new ResponseEntity<>(createdPlane, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdPlane);
     }
 
-    @DeleteMapping(path = "{planeId}")
+    // DELETE
+    @DeleteMapping("/{planeId}")
     public ResponseEntity<Void> deletePlane(@PathVariable Long planeId) {
-        if (planeService.getPlaneById(planeId).isPresent()) {
-            planeService.deletePlane(planeId);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        // No try-catch needed.
+        // If planeId doesn't exist, Service throws exception -> GlobalHandler catches it.
+        planeService.deletePlane(planeId);
+        return ResponseEntity.noContent().build();
     }
 
-    @PutMapping(path = "{planeId}")
-    public ResponseEntity<?> updatePlane(
-            @PathVariable Long planeId,
-            @RequestBody Plane planeUpdate
-    ) {
-        try {
-            planeService.updatePlane(planeId, planeUpdate);
-            return new ResponseEntity<>("Plane updated successfully", HttpStatus.OK);
-        } catch (IllegalStateException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+    // UPDATE
+    @PutMapping("/{planeId}")
+    public ResponseEntity<Plane> updatePlane(@PathVariable Long planeId, @RequestBody Plane planeUpdate) {
+        // No try-catch needed.
+        // Catches NoSuchElementException (404) AND IllegalArgumentException (400) automatically.
+        Plane updatedPlane = planeService.updatePlane(planeId, planeUpdate);
+        return ResponseEntity.ok(updatedPlane);
     }
 }
