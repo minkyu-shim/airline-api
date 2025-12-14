@@ -1,5 +1,6 @@
 package com.epita.airlineapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -24,12 +25,16 @@ public class Client extends User {
     // orphanRemoval : The reward still exists in the MilesReward table. It is just "unlinked"
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude  // Critical to prevent Client -> MilesReward -> Client infinite loop / StackOverflowError
+    @JsonIgnore
     private List<MilesReward> rewards;
 
     // Foreign key mapping
     // orphanRemoval : The booking still exists in the Book table. It is just "unlinked"
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
+    @JsonIgnore
     private List<Book> bookings;
 
+    @Column(name = "discount_code")
+    private String discountCode;
 }
