@@ -1,126 +1,115 @@
-### 0.1 Create a Client (and User)
-# Expected: 201 Created
-# Response body should be the created client object with a generated ID.
+### 0.1 Create Client (User ID: 1)
 POST http://localhost:8080/api/v1/clients
 Content-Type: application/json
 
 {
-  "firstName": "John",
-  "lastName": "Doe",
-  "address": "123 Main St",
-  "email": "john.doe.miles@example.com",
-  "phoneNumber": "555-1234",
-  "birthDate": "1990-01-01",
-  "passportNumber": "M1234567"
+  "firstName": "Discount",
+  "lastName": "Hunter",
+  "address": "456 Side St",
+  "email": "discount.hunter@example.com",
+  "phoneNumber": "555-9999",
+  "birthDate": "1995-05-05",
+  "passportNumber": "D9999999"
 }
 
-### 0.2 Create Departure Airport
-# Expected: 201 Created
-# Response body should be the created airport object with a generated ID.
+### 0.2 Create Departure Airport (Airport ID: 1)
 POST http://localhost:8080/api/v1/airports
 Content-Type: application/json
 
 {
-  "airportName": "Charles de Gaulle",
-  "airportCountry": "France",
-  "airportCity": "Paris"
+  "airportName": "JFK",
+  "airportCountry": "USA",
+  "airportCity": "New York"
 }
 
-### 0.3 Create Arrival Airport
-# Expected: 201 Created
-# Response body should be the created airport object with a generated ID.
+### 0.3 Create Arrival Airport (Airport ID: 2)
 POST http://localhost:8080/api/v1/airports
 Content-Type: application/json
 
 {
-  "airportName": "Heathrow",
-  "airportCountry": "UK",
-  "airportCity": "London"
+  "airportName": "Haneda",
+  "airportCountry": "Japan",
+  "airportCity": "Tokyo"
 }
 
-### 0.4 Create a Plane
-# Expected: 201 Created
-# Response body should be the created plane object with a generated ID.
+### 0.4 Create Plane (Plane ID: 1)
 POST http://localhost:8080/api/v1/planes
 Content-Type: application/json
 
 {
-  "planeBrand": "Airbus",
-  "planeModel": "A320",
-  "manufacturingYear": 2015
+  "planeBrand": "Boeing",
+  "planeModel": "777",
+  "manufacturingYear": 2020
 }
 
-### 0.5 Create a new Flight
-# Expected: 201 Created
-# Response body should be the created flight object with a generated ID.
+### 0.5 Create Flight (Flight ID: 1)
+# Note: Date is set to 2025 to match your "Current Year" logic
 POST http://localhost:8080/api/v1/flights
 Content-Type: application/json
 
 {
-  "flightNumber": "AF102",
-  "departureCity": "Paris",
-  "arrivalCity": "London",
-  "departureDate": "2025-12-21T10:00:00",
-  "arrivalDate": "2025-12-21T11:15:00",
-  "numberOfSeats": 180,
-  "businessPrice": 350.00,
-  "economyPrice": 120.00,
-  "plane": {
-    "planeId": 1
-  },
-  "departureAirport": {
-    "airportId": 1
-  },
-  "arrivalAirport": {
-    "airportId": 2
-  }
+  "flightNumber": "JL006",
+  "departureCity": "New York",
+  "arrivalCity": "Tokyo",
+  "departureDate": "2025-10-10T10:00:00",
+  "arrivalDate": "2025-10-11T14:00:00",
+  "numberOfSeats": 300,
+  "businessPrice": 2000.00,
+  "economyPrice": 800.00,
+  "plane": { "planeId": 1 },
+  "departureAirport": { "airportId": 1 },
+  "arrivalAirport": { "airportId": 2 }
 }
 
-### 1. Create a new Miles Reward (POST)
-# Expected: 201 Created
-# Response body should be the created miles reward object with a generated ID.
+### 1. Create Booking #1
+# This counts as Flight 1. No discount yet.
+POST http://localhost:8080/api/v1/books
+Content-Type: application/json
+
+{
+  "client": { "userId": 1 },
+  "flight": { "flightId": 1 },
+  "typeOfSeat": "Economy"
+}
+
+### 2. Create Booking #2
+# This counts as Flight 2. No discount yet.
+POST http://localhost:8080/api/v1/books
+Content-Type: application/json
+
+{
+  "client": { "userId": 1 },
+  "flight": { "flightId": 1 },
+  "typeOfSeat": "Economy"
+}
+
+### 3. Create Booking #3
+# This counts as Flight 3. The threshold is met!
+# However, the code is generated when we create the MILES REWARD, not the booking.
+POST http://localhost:8080/api/v1/books
+Content-Type: application/json
+
+{
+  "client": { "userId": 1 },
+  "flight": { "flightId": 1 },
+  "typeOfSeat": "Business"
+}
+
+### 4. Create Miles Reward (The Trigger)
+# Your Service Logic:
+# 1. Saves Reward.
+# 2. Counts bookings (Found 3).
+# 3. 3 % 3 == 0 -> Generates Discount Code.
 POST http://localhost:8080/api/miles-rewards
 Content-Type: application/json
 
 {
   "clientId": 1,
   "flightId": 1,
-  "date": "2025-12-21"
+  "date": "2025-10-12"
 }
 
-### 2. Get All Miles Rewards (GET)
-# Expected: 200 OK
-# Response body should be a JSON array of all miles rewards.
-GET http://localhost:8080/api/miles-rewards
-
-### 3. Get Miles Reward by ID (GET)
-# Expected: 200 OK
-# Response body should be the miles reward with ID 1.
-GET http://localhost:8080/api/miles-rewards/1
-
-### 4. Update Miles Reward (PUT)
-# Expected: 200 OK
-# Response body should be the updated miles reward object.
-PUT http://localhost:8080/api/miles-rewards/1
-Content-Type: application/json
-
-{
-  "clientId": 1,
-  "flightId": 1,
-  "date": "2025-12-22"
-}
-
-### 5. Verify Update (GET)
-# Expected: 200 OK
-# Response body should be the miles reward with the updated date "2025-12-22".
-GET http://localhost:8080/api/miles-rewards/1
-
-### 6. Delete Miles Reward (DELETE)
-# Expected: 204 No Content
-# No response body.
-DELETE http://localhost:8080/api/miles-rewards/1
-
-### 7. Verify Deletion (GET)
-# Expected: 404 Not Found
-# Error response body.
-GET http://localhost:8080/api/miles-rewards/1
+### 5. VERIFY: Get Client Details
+# Look at the response body.
+# Expected: "discountCode": "DISC-XXXX" (some random code)
+GET http://localhost:8080/api/v1/clients

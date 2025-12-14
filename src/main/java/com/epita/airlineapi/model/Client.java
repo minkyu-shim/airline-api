@@ -35,4 +35,6 @@ public class Client extends User {
     @JsonIgnore
     private List<Book> bookings;
 
+    @Column(name = "discount_code")
+    private String discountCode;
 }

@@ -4,6 +4,7 @@ import com.epita.airlineapi.dto.MilesRewardCreateDto;
 import com.epita.airlineapi.model.Client;
 import com.epita.airlineapi.model.Flight;
 import com.epita.airlineapi.model.MilesReward;
+import com.epita.airlineapi.repository.BookRepository;
 import com.epita.airlineapi.repository.ClientRepository;
 import com.epita.airlineapi.repository.FlightRepository;
 import com.epita.airlineapi.repository.MilesRewardRepository;
@@ -12,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor // Automatically injects final repositories
@@ -21,25 +24,51 @@ public class MilesRewardService {
     private final MilesRewardRepository milesRewardRepository;
     private final ClientRepository clientRepository; // Needed to resolve Client ID
     private final FlightRepository flightRepository; // Needed to resolve Flight ID
+    private final BookRepository bookRepository; // need for miles reward thing
 
     @Transactional
     public MilesReward createReward(MilesRewardCreateDto dto) {
-        // 1.Fetch the Client
+        // 1. Fetch the Client
         Client client = clientRepository.findById(dto.getClientId())
                 .orElseThrow(() -> new EntityNotFoundException("Client not found with ID: " + dto.getClientId()));
 
-        // 2.Fetch the Flight
+        // 2. Fetch the Flight
         Flight flight = flightRepository.findById(dto.getFlightId())
                 .orElseThrow(() -> new EntityNotFoundException("Flight not found with ID: " + dto.getFlightId()));
 
-        // 3.Create the Reward
+        // 3. Create the Reward
         MilesReward reward = new MilesReward();
         reward.setClient(client);
         reward.setFlight(flight);
         reward.setDate(dto.getDate());
 
-        // 4.Save and return
-        return milesRewardRepository.save(reward);
+        // 4. Save the reward first
+        MilesReward savedReward = milesRewardRepository.save(reward);
+
+        // === 5. DISCOUNT LOGIC START ===
+
+        // Get current year
+        int currentYear = LocalDate.now().getYear();
+
+        // Count flights for this client in the current year
+        // (Ensure you added the query method to BookRepository as described in Step 2)
+        long flightCount = bookRepository.countFlightsByClientAndYear(client, currentYear);
+
+        // Check if it is a multiple of 3
+        if (flightCount > 0 && flightCount % 3 == 0) {
+            // Generate a short random code (e.g., "DISC-A1B2")
+            String code = "DISC-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+
+            // Update Client
+            client.setDiscountCode(code);
+            clientRepository.save(client);
+
+            // Optional: Log it
+            System.out.println("Discount generated for client " + client.getUserId() + ": " + code);
+        }
+        // === DISCOUNT LOGIC END ===
+
+        return savedReward;
     }
 
     public List<MilesReward> getAllRewards() {

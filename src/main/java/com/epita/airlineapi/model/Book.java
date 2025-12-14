@@ -14,6 +14,7 @@ import java.util.Objects;
 @ToString
 public class Book {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "reservation_id")
     private Long reservationId;
 
