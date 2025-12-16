@@ -6,7 +6,7 @@ import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,10 +34,10 @@ public class Flight {
     private String arrivalCity;
 
     @Column(name = "departure_date", nullable = false)
-    private LocalDateTime departureDate;
+    private LocalDate departureDate;
 
     @Column(name = "arrival_date", nullable = false)
-    private LocalDateTime arrivalDate;
+    private LocalDate arrivalDate;
 
     @ManyToOne
     @JoinColumn(name = "departure_airport_id", nullable = false)

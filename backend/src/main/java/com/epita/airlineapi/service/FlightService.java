@@ -38,15 +38,18 @@ public class FlightService {
     }
 
     public List<Flight> searchFlights(String departureCity, String arrivalCity, LocalDate date) {
-    LocalDateTime startOfDay = date.atStartOfDay();
-    LocalDateTime endOfDay = date.atTime(23, 59, 59);
-    return flightRepository.findByDepartureCityIgnoreCaseAndArrivalCityIgnoreCaseAndDepartureDateBetween(
-        departureCity,
-        arrivalCity,
-        startOfDay,
-        endOfDay
-    );
-}
+        // OLD WAY (Deleted):
+        // LocalDateTime startOfDay = date.atStartOfDay();
+        // LocalDateTime endOfDay = date.atTime(23, 59, 59);
+
+        // NEW WAY: Pass the LocalDate directly
+        return flightRepository.findByDepartureCityIgnoreCaseAndArrivalCityIgnoreCaseAndDepartureDate(
+                departureCity,
+                arrivalCity,
+                date
+        );
+    }
+
 
     // CREATE
     public Flight saveFlight(Flight flight) {

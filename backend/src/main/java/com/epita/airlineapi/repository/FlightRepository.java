@@ -3,7 +3,7 @@ package com.epita.airlineapi.repository;
 import com.epita.airlineapi.model.Flight;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,10 +14,12 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
     // Check existence by business key
     boolean existsByFlightNumber(String flightNumber);
 
-    List<Flight> findByDepartureCityIgnoreCaseAndArrivalCityIgnoreCaseAndDepartureDateBetween(
-    String departureCity,
-    String arrivalCity,
-    LocalDateTime start,
-    LocalDateTime end
-);
+    List<Flight> findByDepartureCityIgnoreCaseAndArrivalCityIgnoreCaseAndDepartureDate(String departureCity, String arrivalCity, LocalDate date);
+
+
+
+    // OLD (Deleted):
+    // ...DepartureDateBetween(String dep, String arr, LocalDateTime start, LocalDateTime end);
+
+
 }

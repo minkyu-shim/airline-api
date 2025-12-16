@@ -11,17 +11,15 @@ import com.epita.airlineapi.model.*;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
-import java.time.LocalDateTime;
+import java.time.LocalDate; // ✅ Using LocalDate now
 
 @SpringBootApplication
 public class AirlineApiApplication {
 
-    // Main method to run REST API airline application
     public static void main(String[] args) {
         SpringApplication.run(AirlineApiApplication.class, args);
     }
 
-    // Initialize / Seed Database with records
     @Bean
     @Transactional
     CommandLineRunner initDatabase(PlaneRepository planeRepo,
@@ -29,8 +27,7 @@ public class AirlineApiApplication {
                                    FlightRepository flightRepo,
                                    ClientRepository clientRepo) {
         return args -> {
-            // Only seed if empty
-            // Stop if data already exists to avoid duplicates on "update" mode
+            // Stop if data already exists
             if (planeRepo.count() > 0) return;
 
             System.out.println("🌱 Starting Database Seeding...");
@@ -53,7 +50,7 @@ public class AirlineApiApplication {
             Plane boeing737 = new Plane(null, "Boeing", "737", 2015);
             Plane boeing777 = new Plane(null, "Boeing", "777", 2019);
             Plane airbusA320 = new Plane(null, "Airbus", "A320", 2018);
-            Plane airbusA380 = new Plane(null, "Airbus", "A380", 2021); // Big plane
+            Plane airbusA380 = new Plane(null, "Airbus", "A380", 2021);
 
             planeRepo.saveAll(List.of(boeing737, boeing777, airbusA320, airbusA380));
 
@@ -61,48 +58,39 @@ public class AirlineApiApplication {
             // 3. FLIGHTS
             // ==========================================
 
-            // Helper to make dates easier to read
-            LocalDateTime today = LocalDateTime.now();
+            // ✅ 1. Use a fixed LocalDate (Christmas 2025)
+            LocalDate baseDate = LocalDate.of(2025, 12, 25);
 
             List<Flight> flights = Arrays.asList(
-                    // Paris -> London (Short Haul / Frequent)
-                    createFlight("TO-101", cdg, lhr, airbusA320,
-                            today.plusDays(2).withHour(10).withMinute(0), 1.5, 150, 300),
-                    createFlight("TO-102", cdg, lhr, boeing737,
-                            today.plusDays(2).withHour(16).withMinute(30), 1.5, 140, 280),
+                    // Paris -> London (Same Day)
+                    createFlight("TO-101", cdg, lhr, airbusA320, baseDate, 1.5, 150, 300),
+                    createFlight("TO-102", cdg, lhr, boeing737, baseDate, 1.5, 140, 280),
 
-                    // London -> New York (Transatlantic)
-                    createFlight("TO-201", lhr, jfk, boeing777,
-                            today.plusDays(3).withHour(11).withMinute(0), 8.0, 600, 1800),
-                    createFlight("TO-202", lhr, jfk, airbusA380,
-                            today.plusDays(5).withHour(14).withMinute(0), 8.0, 650, 2100),
+                    // London -> New York (Starts Dec 26)
+                    createFlight("TO-201", lhr, jfk, boeing777, baseDate.plusDays(1), 8.0, 600, 1800),
 
-                    // New York -> Tokyo (Long Haul)
-                    createFlight("TO-301", jfk, hnd, boeing777,
-                            today.plusDays(10).withHour(9).withMinute(0), 14.0, 1100, 3500),
+                    // London -> New York (Starts Dec 27)
+                    createFlight("TO-202", lhr, jfk, airbusA380, baseDate.plusDays(2), 8.0, 650, 2100),
 
-                    // Dubai -> Singapore
-                    createFlight("TO-401", dxb, sin, airbusA380,
-                            today.plusDays(7).withHour(2).withMinute(0), 7.5, 500, 1200),
+                    // New York -> Tokyo (Starts Dec 28)
+                    createFlight("TO-301", jfk, hnd, boeing777, baseDate.plusDays(3), 14.0, 1100, 3500),
 
-                    // Singapore -> Paris (Return trip long haul)
-                    createFlight("TO-501", sin, cdg, boeing777,
-                            today.plusDays(12).withHour(23).withMinute(0), 13.0, 900, 2500),
+                    // Dubai -> Singapore (Dec 25)
+                    createFlight("TO-401", dxb, sin, airbusA380, baseDate, 7.5, 500, 1200),
 
-                    // Domestic / Short hops
-                    createFlight("TO-601", lhr, cdg, airbusA320,
-                            today.plusDays(4).withHour(8).withMinute(0), 1.5, 120, 250)
+                    // Singapore -> Paris (Dec 29)
+                    createFlight("TO-501", sin, cdg, boeing777, baseDate.plusDays(4), 13.0, 900, 2500)
             );
 
             flightRepo.saveAll(flights);
 
-            System.out.println("✅ Database Seeded Successfully: " + flights.size() + " flights added.");
+            System.out.println("✅ Database Seeded Successfully");
         };
     }
 
-    // Helper method to keep the code above clean
+    // ✅ Helper method updated to take LocalDate
     private Flight createFlight(String number, Airport dep, Airport arr, Plane plane,
-                                LocalDateTime date, double durationHours, double ecoPrice, double bizPrice) {
+                                LocalDate date, double durationHours, double ecoPrice, double bizPrice) {
         Flight f = new Flight();
         f.setFlightNumber(number);
         f.setDepartureCity(dep.getAirportCity());
@@ -110,15 +98,23 @@ public class AirlineApiApplication {
         f.setDepartureAirport(dep);
         f.setArrivalAirport(arr);
         f.setPlane(plane);
+
+        // ✅ Set Date directly (No time component)
         f.setDepartureDate(date);
-        f.setArrivalDate(date.plusMinutes((long)(durationHours * 60)));
+
+        // Logic: If duration > 12 hours, assume arrival is next day. Else same day.
+        if (durationHours > 12) {
+            f.setArrivalDate(date.plusDays(1));
+        } else {
+            f.setArrivalDate(date);
+        }
+
         f.setEconomyPrice(BigDecimal.valueOf(ecoPrice));
         f.setBusinessPrice(BigDecimal.valueOf(bizPrice));
 
-        // Rough estimation of seats based on plane type for variety
         if (plane.getPlaneModel().equals("A380")) f.setNumberOfSeats(500);
         else if (plane.getPlaneModel().equals("777")) f.setNumberOfSeats(300);
-        else f.setNumberOfSeats(180); // A320, 737
+        else f.setNumberOfSeats(180);
 
         return f;
     }
