@@ -28,6 +28,10 @@ public class MilesRewardService {
 
     @Transactional
     public MilesReward createReward(MilesRewardCreateDto dto) {
+        if (dto == null || dto.getClientId() == null || dto.getFlightId() == null || dto.getDate() == null) {
+            throw new IllegalArgumentException("clientId, flightId and date are required");
+        }
+
         // 1. Fetch the Client
         Client client = clientRepository.findById(dto.getClientId())
                 .orElseThrow(() -> new EntityNotFoundException("Client not found with ID: " + dto.getClientId()));
@@ -50,8 +54,7 @@ public class MilesRewardService {
         // Get current year
         int currentYear = LocalDate.now().getYear();
 
-        // Count flights for this client in the current year
-        // (Ensure you added the query method to BookRepository as described in Step 2)
+        // Count how many bookings a specific client has in the current year
         long flightCount = bookRepository.countFlightsByClientAndYear(client, currentYear);
 
         // Check if it is a multiple of 3
@@ -62,9 +65,6 @@ public class MilesRewardService {
             // Update Client
             client.setDiscountCode(code);
             clientRepository.save(client);
-
-            // Optional: Log it
-            System.out.println("Discount generated for client " + client.getUserId() + ": " + code);
         }
         // === DISCOUNT LOGIC END ===
 
@@ -82,6 +82,10 @@ public class MilesRewardService {
 
     @Transactional
     public MilesReward updateReward(Long id, MilesRewardCreateDto dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Payload is required");
+        }
+
         // 1.Find the existing reward
         MilesReward existingReward = milesRewardRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Reward not found with ID: " + id));

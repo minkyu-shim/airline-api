@@ -1,10 +1,15 @@
 package com.epita.airlineapi.service;
 
+import com.epita.airlineapi.model.Airport;
 import com.epita.airlineapi.model.Flight;
+import com.epita.airlineapi.model.Plane;
+import com.epita.airlineapi.repository.AirportRepository;
 import com.epita.airlineapi.repository.FlightRepository;
+import com.epita.airlineapi.repository.PlaneRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,9 +20,13 @@ import java.util.Objects;
 public class FlightService {
 
     private final FlightRepository flightRepository;
+    private final AirportRepository airportRepository;
+    private final PlaneRepository planeRepository;
 
-    public FlightService(FlightRepository flightRepository) {
+    public FlightService(FlightRepository flightRepository, AirportRepository airportRepository, PlaneRepository planeRepository) {
         this.flightRepository = flightRepository;
+        this.airportRepository = airportRepository;
+        this.planeRepository = planeRepository;
     }
 
     // GET ALL
@@ -38,23 +47,33 @@ public class FlightService {
     }
 
     public List<Flight> searchFlights(String departureCity, String arrivalCity, LocalDate date) {
-        // OLD WAY (Deleted):
-        // LocalDateTime startOfDay = date.atStartOfDay();
-        // LocalDateTime endOfDay = date.atTime(23, 59, 59);
-
-        // NEW WAY: Pass the LocalDate directly
-        return flightRepository.findByDepartureCityIgnoreCaseAndArrivalCityIgnoreCaseAndDepartureDate(
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay().minusNanos(1);
+        return flightRepository.findByDepartureCityIgnoreCaseAndArrivalCityIgnoreCaseAndDepartureDateBetween(
                 departureCity,
                 arrivalCity,
-                date
+                startOfDay,
+                endOfDay
         );
     }
 
-
     // CREATE
+    @Transactional
     public Flight saveFlight(Flight flight) {
+        if (flight == null) {
+            throw new IllegalArgumentException("Flight payload is required");
+        }
 
-        // Validate Dates
+        if (flight.getFlightNumber() == null || flight.getFlightNumber().isBlank()) {
+            throw new IllegalArgumentException("Flight number is required");
+        }
+
+        if (flightRepository.existsByFlightNumber(flight.getFlightNumber())) {
+            throw new IllegalStateException("Flight number " + flight.getFlightNumber() + " already exists");
+        }
+
+        resolveAndAssignFlightRelations(flight);
+        validateSeatAndPrices(flight);
         validateFlightDates(flight);
 
         return flightRepository.save(flight);
@@ -63,18 +82,27 @@ public class FlightService {
     // UPDATE
     @Transactional
     public Flight updateFlight(Long flightId, Flight updateRequest) {
+        if (updateRequest == null) {
+            throw new IllegalArgumentException("Flight update payload is required");
+        }
+
         Flight flight = getFlightById(flightId);
 
         // 1.Update Flight Number
-        if (updateRequest.getFlightNumber() != null && !updateRequest.getFlightNumber().isEmpty()) {
-            flight.setFlightNumber(updateRequest.getFlightNumber());
+        if (updateRequest.getFlightNumber() != null && !updateRequest.getFlightNumber().isBlank()) {
+            if (!updateRequest.getFlightNumber().equals(flight.getFlightNumber())) {
+                if (flightRepository.existsByFlightNumber(updateRequest.getFlightNumber())) {
+                    throw new IllegalStateException("Flight number " + updateRequest.getFlightNumber() + " already exists");
+                }
+                flight.setFlightNumber(updateRequest.getFlightNumber());
+            }
         }
 
         // 2.Update Cities
-        if (updateRequest.getDepartureCity() != null && !updateRequest.getDepartureCity().isEmpty()) {
+        if (updateRequest.getDepartureCity() != null && !updateRequest.getDepartureCity().isBlank()) {
             flight.setDepartureCity(updateRequest.getDepartureCity());
         }
-        if (updateRequest.getArrivalCity() != null && !updateRequest.getArrivalCity().isEmpty()) {
+        if (updateRequest.getArrivalCity() != null && !updateRequest.getArrivalCity().isBlank()) {
             flight.setArrivalCity(updateRequest.getArrivalCity());
         }
 
@@ -94,16 +122,37 @@ public class FlightService {
         }
 
         // 4.Update Relationships (Airports & Plane)
-        // Ideally, you should fetch these entities from their repositories to ensure they exist
-        if (updateRequest.getDepartureAirport() != null) flight.setDepartureAirport(updateRequest.getDepartureAirport());
-        if (updateRequest.getArrivalAirport() != null) flight.setArrivalAirport(updateRequest.getArrivalAirport());
-        if (updateRequest.getPlane() != null) flight.setPlane(updateRequest.getPlane());
+        if (updateRequest.getDepartureAirport() != null) {
+            flight.setDepartureAirport(resolveAirportById(updateRequest.getDepartureAirport().getAirportId(), "Departure airport"));
+        }
+        if (updateRequest.getArrivalAirport() != null) {
+            flight.setArrivalAirport(resolveAirportById(updateRequest.getArrivalAirport().getAirportId(), "Arrival airport"));
+        }
+        if (updateRequest.getPlane() != null) {
+            flight.setPlane(resolvePlaneById(updateRequest.getPlane().getPlaneId(), "Plane"));
+        }
 
         // 5.Update Pricing/Seats
-        if (updateRequest.getNumberOfSeats() != null) flight.setNumberOfSeats(updateRequest.getNumberOfSeats());
-        if (updateRequest.getBusinessPrice() != null) flight.setBusinessPrice(updateRequest.getBusinessPrice());
-        if (updateRequest.getEconomyPrice() != null) flight.setEconomyPrice(updateRequest.getEconomyPrice());
+        if (updateRequest.getNumberOfSeats() != null) {
+            if (updateRequest.getNumberOfSeats() <= 0) {
+                throw new IllegalArgumentException("numberOfSeats must be greater than 0");
+            }
+            flight.setNumberOfSeats(updateRequest.getNumberOfSeats());
+        }
+        if (updateRequest.getBusinessPrice() != null) {
+            if (updateRequest.getBusinessPrice().compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("businessPrice must be zero or positive");
+            }
+            flight.setBusinessPrice(updateRequest.getBusinessPrice());
+        }
+        if (updateRequest.getEconomyPrice() != null) {
+            if (updateRequest.getEconomyPrice().compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("economyPrice must be zero or positive");
+            }
+            flight.setEconomyPrice(updateRequest.getEconomyPrice());
+        }
 
+        validateDistinctAirports(flight);
         return flight;
     }
 
@@ -113,6 +162,65 @@ public class FlightService {
             throw new NoSuchElementException("Flight with id " + flightId + " not found");
         }
         flightRepository.deleteById(flightId);
+    }
+
+    private void resolveAndAssignFlightRelations(Flight flight) {
+        if (flight.getDepartureAirport() == null || flight.getDepartureAirport().getAirportId() == null) {
+            throw new IllegalArgumentException("Flight must have a departure airport");
+        }
+
+        if (flight.getArrivalAirport() == null || flight.getArrivalAirport().getAirportId() == null) {
+            throw new IllegalArgumentException("Flight must have an arrival airport");
+        }
+
+        if (flight.getPlane() == null || flight.getPlane().getPlaneId() == null) {
+            throw new IllegalArgumentException("Flight must have a plane");
+        }
+
+        flight.setDepartureAirport(resolveAirportById(flight.getDepartureAirport().getAirportId(), "Departure airport"));
+        flight.setArrivalAirport(resolveAirportById(flight.getArrivalAirport().getAirportId(), "Arrival airport"));
+        flight.setPlane(resolvePlaneById(flight.getPlane().getPlaneId(), "Plane"));
+        validateDistinctAirports(flight);
+    }
+
+    private Airport resolveAirportById(Long airportId, String label) {
+        if (airportId == null) {
+            throw new IllegalArgumentException(label + " id is required");
+        }
+
+        return airportRepository.findById(airportId)
+                .orElseThrow(() -> new NoSuchElementException(label + " with id " + airportId + " not found"));
+    }
+
+    private Plane resolvePlaneById(Long planeId, String label) {
+        if (planeId == null) {
+            throw new IllegalArgumentException(label + " id is required");
+        }
+
+        return planeRepository.findById(planeId)
+                .orElseThrow(() -> new NoSuchElementException(label + " with id " + planeId + " not found"));
+    }
+
+    private void validateDistinctAirports(Flight flight) {
+        if (flight.getDepartureAirport() != null
+                && flight.getArrivalAirport() != null
+                && Objects.equals(flight.getDepartureAirport().getAirportId(), flight.getArrivalAirport().getAirportId())) {
+            throw new IllegalArgumentException("Departure and arrival airports must be different");
+        }
+    }
+
+    private void validateSeatAndPrices(Flight flight) {
+        if (flight.getNumberOfSeats() == null || flight.getNumberOfSeats() <= 0) {
+            throw new IllegalArgumentException("numberOfSeats must be greater than 0");
+        }
+
+        if (flight.getBusinessPrice() == null || flight.getBusinessPrice().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("businessPrice must be zero or positive");
+        }
+
+        if (flight.getEconomyPrice() == null || flight.getEconomyPrice().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("economyPrice must be zero or positive");
+        }
     }
 
     // Helper Method for Validation

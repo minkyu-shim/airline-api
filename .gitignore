@@ -10,3 +10,9 @@ Thumbs.db
 # Safety check for frontend (though frontend usually has its own)
 node_modules/
 dist/
+backend/startup-backend.log
+backend/startup-backend.log.err
+frontend/startup-frontend.log
+frontend/startup-frontend.log.err
+frontend/.npm-cache/
+.m2/

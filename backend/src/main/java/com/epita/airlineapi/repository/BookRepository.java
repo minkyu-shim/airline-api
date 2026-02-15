@@ -12,4 +12,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     // Assumes your Book entity has a 'flight' which has a 'departureDate'
     @Query("SELECT COUNT(b) FROM Book b WHERE b.client = :client AND YEAR(b.flight.departureDate) = :year")
     long countFlightsByClientAndYear(@Param("client") Client client, @Param("year") int year);
+
+    long countByFlight_FlightId(Long flightId);
+
+    boolean existsByFlight_FlightIdAndClient_UserId(Long flightId, Long clientId);
 }

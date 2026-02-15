@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "api/v1/flights")
+@RequestMapping(path = "/api/v1/flights")
 public class FlightController {
 
     private final FlightService flightService;
@@ -65,10 +65,10 @@ public class FlightController {
 
     @GetMapping("/search")
     public List<Flight> searchFlights(
-        @RequestParam String from,
-        @RequestParam String to,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
-) {
-    return flightService.searchFlights(from, to, date);
-}
+            @RequestParam String from,
+            @RequestParam String to,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        return flightService.searchFlights(from, to, date);
+    }
 }

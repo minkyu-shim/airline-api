@@ -3,6 +3,7 @@ package com.epita.airlineapi.controller;
 import com.epita.airlineapi.dto.MilesRewardCreateDto;
 import com.epita.airlineapi.model.MilesReward;
 import com.epita.airlineapi.service.MilesRewardService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class MilesRewardController {
     private final MilesRewardService milesRewardService;
 
     @PostMapping
-    public ResponseEntity<MilesReward> createReward(@RequestBody MilesRewardCreateDto createDto) {
+    public ResponseEntity<MilesReward> createReward(@Valid @RequestBody MilesRewardCreateDto createDto) {
         // We pass the DTO to the service, which handles the ID -> Entity lookup
         MilesReward createdReward = milesRewardService.createReward(createDto);
         return new ResponseEntity<>(createdReward, HttpStatus.CREATED);
@@ -35,7 +36,7 @@ public class MilesRewardController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MilesReward> updateReward(@PathVariable Long id, @RequestBody MilesRewardCreateDto dto) {
+    public ResponseEntity<MilesReward> updateReward(@PathVariable Long id, @Valid @RequestBody MilesRewardCreateDto dto) {
         MilesReward updatedReward = milesRewardService.updateReward(id, dto);
         return ResponseEntity.ok(updatedReward);
     }

@@ -4,7 +4,7 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: epita
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
       POSTGRES_DB: epita
       PGDATA: /data/postgres
     volumes:
